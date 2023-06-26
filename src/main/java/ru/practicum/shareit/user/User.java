@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * TODO Sprint add-controllers.
+ *  TODO Sprint add-controllers.
  */
 
 @Data
@@ -14,5 +14,5 @@ import lombok.RequiredArgsConstructor;
 public class User {
     private Integer id;
     private String name;
-    private String description;
+    private String email;
 }
