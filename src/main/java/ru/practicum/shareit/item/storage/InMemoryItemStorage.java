@@ -99,11 +99,12 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Set<Item> getBy(String text) {
+    public List<Item> getBy(String text) {
         return items.values().stream()
                 .filter(Item::isAvailable)
                 .filter((Item item) -> item.getName().toLowerCase().contains(text.toLowerCase())
                         || item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .collect(Collectors.toSet());
+                .sorted(Comparator.comparing(Item::getId))
+                .collect(Collectors.toList());
     }
 }

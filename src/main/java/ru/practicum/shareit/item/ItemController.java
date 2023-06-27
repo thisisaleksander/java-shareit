@@ -7,6 +7,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,7 +49,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Set<ItemDto> findBy(@RequestParam(value = "text") String text) {
+    public List<ItemDto> findBy(@RequestParam(value = "text") String text) {
         return itemService.findBy(text);
     }
 }

@@ -11,6 +11,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,12 +62,12 @@ public class ItemService {
                 .collect(Collectors.toSet());
     }
 
-    public Set<ItemDto> findBy(String text) {
+    public List<ItemDto> findBy(String text) {
         if (text.isEmpty()) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
         return itemStorage.getBy(text).stream()
                 .map(ItemMapper::toDto)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 }
