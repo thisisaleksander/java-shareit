@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.exception.InvalidArgumentException;
 import ru.practicum.shareit.item.exception.ItemBelongToAnotherUserException;
 import ru.practicum.shareit.item.exception.ItemDoNotExistsException;
 import ru.practicum.shareit.user.User;
@@ -12,8 +11,6 @@ import ru.practicum.shareit.user.User;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -50,7 +47,6 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public Item update(Item item, Integer itemId, @NonNull User user) {
-        Item originalItem = items.get(itemId);
         if (isNull(userBelongings.get(user.getId())) || !userBelongings.get(user.getId()).contains(itemId)) {
             throw new ItemBelongToAnotherUserException("Вещь принадлежит другому пользователю");
         }

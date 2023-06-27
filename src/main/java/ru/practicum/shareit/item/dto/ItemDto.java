@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.dto;
 import lombok.*;
 import ru.practicum.shareit.user.User;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**

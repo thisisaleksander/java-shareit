@@ -31,7 +31,7 @@ public class ItemService {
 
     public ItemDto create(ItemDto itemDto, Integer userId) {
         if (isNull(itemDto.getDescription()) || isNull(itemDto.getName())
-                ||itemDto.getName().isEmpty() || itemDto.getDescription().isEmpty()
+                || itemDto.getName().isEmpty() || itemDto.getDescription().isEmpty()
                 || isNull(itemDto.isAvailable()) || isNull(userId)) {
             throw new InvalidArgumentException("Переданы не все параметры для записи новой вещи.");
         }
