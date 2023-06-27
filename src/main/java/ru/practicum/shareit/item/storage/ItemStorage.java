@@ -1,5 +1,18 @@
 package ru.practicum.shareit.item.storage;
 
-public class ItemStorage {
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
+import java.util.Set;
+
+public interface ItemStorage {
+    Item save(Item item);
+
+    Item update(Item item, Integer itemId, User user);
+
+    Item getBy(Integer itemId);
+
+    Set<Item> getBy(User user);
+
+    Set<Item> getBy(String text);
 }

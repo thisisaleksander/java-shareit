@@ -1,32 +1,32 @@
 package ru.practicum.shareit.item;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * TODO Sprint add-controllers.
  */
 
 @Data
+@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class Item {
-    @NonNull
     private Integer id;
-    @NonNull
+    @Size(max = 50)
     private String name;
+    @Size(max = 250)
     private String description;
-    @NonNull
-    private boolean available;
-    @NonNull
+    private Boolean available;
     private User owner;
     private ItemRequest request;
 
-    public boolean isAvailable() {
+    public Boolean isAvailable() {
         return available;
     }
 }
