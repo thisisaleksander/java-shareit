@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * TODO Sprint add-bookings.
@@ -17,8 +17,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class Booking {
     private Integer id;
-    private Date start;
-    private Date end;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private Item item;
     private User booker;
     private String status;

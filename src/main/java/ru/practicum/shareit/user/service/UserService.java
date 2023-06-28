@@ -26,13 +26,13 @@ public class UserService {
     }
 
     public UserDto create(@Valid UserDto userDto) {
-        log.info("Mapping userDto to user, user id = " + userDto.getId());
+        log.info("[UserService] -> creating new user");
         User user = toUser(userDto);
         return toDto(userStorage.save(user));
     }
 
     public Set<UserDto> getAll() {
-        log.info("Mapping all users to userDto");
+        log.info("[UserService] -> getting all users");
         return userStorage.getAll().stream()
                 .map(UserMapper::toDto)
                 .collect(Collectors.toSet());
@@ -40,18 +40,18 @@ public class UserService {
 
     public UserDto getBy(Integer userId) {
         User user = userStorage.getBy(userId);
-        log.info("Mapping user to userDto, user id = " + userId);
+        log.info("[UserService] -> getting user with id {}", userId);
         return toDto(user);
     }
 
     public UserDto update(UserDto userDto, Integer userId) {
-        log.info("Mapping userDto to user, user id = " + userId);
+        log.info("[UserService] -> updating user with id {}", userId);
         User user = toUser(userDto);
         return toDto(userStorage.update(user, userId));
     }
 
     public void delete(Integer userId) {
-        log.info("Trying to delete user, user id = " + userId);
+        log.info("[UserService] -> updating user with id {}", userId);
         userStorage.delete(userId);
     }
 }

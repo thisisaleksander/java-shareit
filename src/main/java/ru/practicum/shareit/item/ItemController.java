@@ -28,6 +28,7 @@ public class ItemController {
     @PostMapping
     public ItemDto create(@RequestBody @Valid ItemDto itemDto,
                           @RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
+        log.info("[ItemController] -> create item request");
         return itemService.create(itemDto, userId);
     }
 
@@ -35,21 +36,25 @@ public class ItemController {
     public ItemDto update(@RequestBody @Valid ItemDto itemDto,
                           @PathVariable(value = "itemId") Integer itemId,
                           @RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
+        log.info("[ItemController] -> update item request");
         return itemService.update(itemDto, itemId, userId);
     }
 
     @GetMapping("/{itemId}")
     public ItemDto getBy(@PathVariable(value = "itemId") Integer itemId) {
+        log.info("[ItemController] -> get item by id request");
         return itemService.getBy(itemId);
     }
 
     @GetMapping
     public Set<ItemDto> findBy(@RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
+        log.info("[ItemController] -> get items by user request");
         return itemService.findBy(userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> findBy(@RequestParam(value = "text") String text) {
+        log.info("[ItemController] -> get items by key word request");
         return itemService.findBy(text);
     }
 }

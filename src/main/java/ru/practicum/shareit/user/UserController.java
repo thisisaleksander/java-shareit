@@ -26,32 +26,32 @@ public class UserController {
 
     @PostMapping
     public UserDto create(@RequestBody @Valid UserDto userDto) {
-        log.info("CREATE user request");
+        log.info("[UserController] -> create user request");
         return userService.create(userDto);
     }
 
     @GetMapping
     public Set<UserDto> getAll() {
-        log.info("GET all users request");
+        log.info("[UserController] -> get all users request");
         return userService.getAll();
     }
 
     @GetMapping("/{id}")
     public UserDto getBy(@PathVariable(value = "id") Integer userId) {
-        log.info("GET user by id request");
+        log.info("[UserController] -> get user by id request");
         return userService.getBy(userId);
     }
 
     @PatchMapping("/{id}")
     public UserDto update(@RequestBody @Valid UserDto userDto,
                           @PathVariable(value = "id", required = false) Integer userId) {
-        log.info("UPDATE user request");
+        log.info("[UserController] -> update user request");
         return userService.update(userDto, userId);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable(value = "id") Integer userId) {
-        log.info("DELETE user request");
+        log.info("[UserController] -> delete user request");
         userService.delete(userId);
     }
 }

@@ -34,9 +34,9 @@ public class ItemService {
         if (isNull(itemDto.getDescription()) || isNull(itemDto.getName())
                 || itemDto.getName().isEmpty() || itemDto.getDescription().isEmpty()
                 || isNull(itemDto.isAvailable()) || isNull(userId)) {
-            throw new InvalidArgumentException("Переданы не все параметры для записи новой вещи.");
+            throw new InvalidArgumentException("Missing arguments in request!");
         }
-        log.info("Mapping userDto to user, user id = " + itemDto.getId());
+        log.info("[ItemService] -> create, item id = {}, user id = {}", itemDto.getId(), userId);
         User user = userStorage.getBy(userId);
         Item item = toItem(itemDto, user);
         return toDto(itemStorage.save(item));
@@ -44,18 +44,21 @@ public class ItemService {
 
     public ItemDto update(ItemDto itemDto, Integer itemId, Integer userId) {
         if (isNull(userId) || isNull(itemId) || isNull(itemDto)) {
-            throw new InvalidArgumentException("Переданы не все параметры для записи новой вещи.");
+            throw new InvalidArgumentException("Missing arguments in request!");
         }
+        log.info("[ItemService] -> update, item id = {}, user id = {}", itemId, userId);
         User user = userStorage.getBy(userId);
         Item item = toItem(itemDto, user);
         return toDto(itemStorage.update(item, itemId, user));
     }
 
     public ItemDto getBy(Integer itemId) {
+        log.info("[ItemService] -> get item by id, id = {}", itemId);
         return toDto(itemStorage.getBy(itemId));
     }
 
     public Set<ItemDto> findBy(Integer userId) {
+        log.info("[ItemService] -> get items by user, id = {}", userId);
         User user = userStorage.getBy(userId);
         return itemStorage.getBy(user).stream()
                 .map(ItemMapper::toDto)
@@ -63,6 +66,7 @@ public class ItemService {
     }
 
     public List<ItemDto> findBy(String text) {
+        log.info("[ItemService] -> find items by key word, text: {}", text);
         if (text.isEmpty()) {
             return Collections.emptyList();
         }

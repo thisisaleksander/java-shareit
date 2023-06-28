@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import ru.practicum.shareit.user.User;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * TODO Sprint add-item-requests.
@@ -18,5 +18,5 @@ public class ItemRequest {
     private Integer id;
     private String description;
     private User requestor;
-    private Date created;
+    private LocalDateTime created;
 }
