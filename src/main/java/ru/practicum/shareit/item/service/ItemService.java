@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.Item;
@@ -21,14 +22,10 @@ import static ru.practicum.shareit.item.mapper.ItemMapper.toItem;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ItemService {
     private final ItemStorage itemStorage;
     private final UserStorage userStorage;
-
-    public ItemService(ItemStorage itemStorage, UserStorage userStorage) {
-        this.itemStorage = itemStorage;
-        this.userStorage = userStorage;
-    }
 
     public ItemDto create(ItemDto itemDto, Integer userId) {
         if (isNull(itemDto.getDescription()) || isNull(itemDto.getName())
