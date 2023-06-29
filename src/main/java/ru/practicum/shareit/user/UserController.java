@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 /**
@@ -46,7 +47,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable(value = "id") Integer userId) {
+    public void delete(@PathVariable(value = "id") @NotNull Integer userId) {
         log.info("[UserController] -> delete user request");
         userService.delete(userId);
     }

@@ -74,9 +74,9 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<User> getAll() {
+    public List<User> getAll() {
         log.info("[InMemoryUserStorage] -> total users found: {}", users.size());
-        return new HashSet<>(users.values());
+        return null;
     }
 
     @Override

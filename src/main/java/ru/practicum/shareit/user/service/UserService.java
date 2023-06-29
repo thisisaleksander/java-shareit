@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.Set;
@@ -19,7 +18,7 @@ import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserServiceImpl userStorage;
 
     public UserDto create(@Valid UserDto userDto) {
         log.info("[UserService] -> creating new user");
@@ -47,7 +46,7 @@ public class UserService {
     }
 
     public void delete(Integer userId) {
-        log.info("[UserService] -> updating user with id {}", userId);
+        log.info("[UserService] -> deleting user with id {}", userId);
         userStorage.delete(userId);
     }
 }
