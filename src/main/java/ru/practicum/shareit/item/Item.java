@@ -1,6 +1,7 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.item;
 
 import lombok.*;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.Size;
@@ -13,7 +14,7 @@ import javax.validation.constraints.Size;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class ItemDto {
+public class Item {
     private Integer id;
     @Size(max = 50)
     private String name;
@@ -21,6 +22,7 @@ public class ItemDto {
     private String description;
     private Boolean available;
     private User owner;
+    private ItemRequest request;
 
     public Boolean isAvailable() {
         return available;
