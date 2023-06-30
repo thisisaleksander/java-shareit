@@ -1,52 +1,18 @@
 package ru.practicum.shareit.user.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
 
-import javax.validation.Valid;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
-import static ru.practicum.shareit.user.mapper.UserMapper.toDto;
-import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
+public interface UserService {
+    List<UserDto> getAll();
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class UserService {
-    private final UserServiceImpl userStorage;
+    UserDto save(UserDto userDto);
 
-    public UserDto create(@Valid UserDto userDto) {
-        log.info("[UserService] -> creating new user");
-        User user = toUser(userDto);
-        return toDto(userStorage.save(user));
-    }
+    UserDto update(Integer userId, UserDto userDto);
 
-    public Set<UserDto> getAll() {
-        log.info("[UserService] -> getting all users");
-        return userStorage.getAll().stream()
-                .map(UserMapper::toDto)
-                .collect(Collectors.toSet());
-    }
+    UserDto getBy(Integer userId);
 
-    public UserDto getBy(Integer userId) {
-        User user = userStorage.getBy(userId);
-        log.info("[UserService] -> getting user with id {}", userId);
-        return toDto(user);
-    }
-
-    public UserDto update(UserDto userDto, Integer userId) {
-        log.info("[UserService] -> updating user with id {}", userId);
-        User user = toUser(userDto);
-        return toDto(userStorage.update(user, userId));
-    }
-
-    public void delete(Integer userId) {
-        log.info("[UserService] -> deleting user with id {}", userId);
-        userStorage.delete(userId);
-    }
+    void delete(Integer userId);
 }

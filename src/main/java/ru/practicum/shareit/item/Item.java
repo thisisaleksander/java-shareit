@@ -8,9 +8,6 @@ import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
-/**
- * TODO Sprint add-controllers.
- */
 
 @Data
 @Entity
@@ -23,18 +20,14 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     @Size(max = 50)
     @Column(name = "name")
     private String name;
-
     @Size(max = 250)
     @Column(name = "description")
     private String description;
-
     @Column(name = "is_available")
     private Boolean available;
-
     @ManyToOne
     private User owner;
 

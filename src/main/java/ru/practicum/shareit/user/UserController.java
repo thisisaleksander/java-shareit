@@ -7,12 +7,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.Set;
-
-/**
- * TODO Sprint add-controllers.
- */
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,30 +19,29 @@ public class UserController {
     @PostMapping
     public UserDto create(@RequestBody @Valid UserDto userDto) {
         log.info("[UserController] -> create user request");
-        return userService.create(userDto);
+        return userService.save(userDto);
     }
 
     @GetMapping
-    public Set<UserDto> getAll() {
+    public List<UserDto> getAll() {
         log.info("[UserController] -> get all users request");
         return userService.getAll();
     }
 
-    @GetMapping("/{id}")
-    public UserDto getBy(@PathVariable(value = "id") Integer userId) {
-        log.info("[UserController] -> get user by id request");
+    @PatchMapping("/{userId}")
+    public UserDto update(@RequestBody UserDto userDto, @PathVariable Integer userId) {
+        log.info("[UserController] -> update user request");
+        return userService.update(userId, userDto);
+    }
+
+    @GetMapping("/{userId}")
+    public UserDto getById(@PathVariable Integer userId) {
+        log.info("[UserController] -> update user request");
         return userService.getBy(userId);
     }
 
-    @PatchMapping("/{id}")
-    public UserDto update(@RequestBody @Valid UserDto userDto,
-                          @PathVariable(value = "id", required = false) Integer userId) {
-        log.info("[UserController] -> update user request");
-        return userService.update(userDto, userId);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable(value = "id") @NotNull Integer userId) {
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable Integer userId) {
         log.info("[UserController] -> delete user request");
         userService.delete(userId);
     }

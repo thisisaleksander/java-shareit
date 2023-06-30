@@ -4,9 +4,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.User;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
-    User findUserById(Integer id);
+import java.util.Optional;
 
-    void deleteById(Integer id);
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    Optional<User> findById(Integer userId);
+
+    void deleteById(Integer userId);
 }

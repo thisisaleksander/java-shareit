@@ -5,75 +5,93 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.InvalidUserEmailException;
-import ru.practicum.shareit.user.exception.UserEmailAlreadyExistsException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.storage.UserRepository;
-import ru.practicum.shareit.user.storage.UserStorage;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
+import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
+import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
 import static ru.practicum.shareit.validation.EmailValidator.isValidEmail;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserServiceImpl implements UserStorage {
-    private final UserRepository repository;
+public class UserServiceImpl implements UserService {
+    UserRepository repository;
 
     @Override
-    @Transactional
-    public User save(@Valid User user) throws UserEmailAlreadyExistsException {
-        log.info("[UserServiceImpl] -> saving new user to database");
-        return repository.save(user);
+    public List<UserDto> getAll() {
+        return repository.findAll().stream()
+                .map(UserMapper::toUserDto)
+                .sorted(Comparator.comparing(UserDto::getId))
+                .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional
-    public User update(@Valid User user, @NotNull Integer id) throws InvalidUserEmailException,
-            UserNotFoundException, UserEmailAlreadyExistsException {
-        User originalUser = repository.findUserById(id);
-        if (nonNull(user.getEmail()) && !user.getEmail().isEmpty()) {
-            if (!isValidEmail(user.getEmail())) {
-                throw new UserEmailAlreadyExistsException(String.join(" ",
-                            "[UserServiceImpl] -> email ", user.getEmail(), " already exists"));
+    @Override
+    public UserDto save(@Valid UserDto userDto) {
+        User user = toUser(userDto);
+        return toUserDto(repository.save(user));
+    }
+
+    @Transactional
+    @Override
+    public UserDto update(@NotNull Integer userId, @Valid UserDto userDto) {
+        User user = toUser(userDto);
+        log.info("[UserServiceImpl] -> user from DTO successfully created");
+        user.setId(userId);
+        Optional<User> originalUser = repository.findById(userId);
+        if (originalUser.isPresent()) {
+            if (nonNull(user.getName()) && !user.getName().isEmpty()) {
+                originalUser.get().setName(user.getName());
+                log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
             }
+            if (nonNull(user.getEmail()) && !user.getEmail().isEmpty()) {
+                if (isValidEmail(user.getEmail())) {
+                    originalUser.get().setEmail(user.getEmail());
+                    log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
+                } else {
+                    log.info("[UserServiceImpl] -> invalid user email {}", userId);
+                    throw new InvalidUserEmailException(String.join(" ",
+                            "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
+                }
+            }
+            return toUserDto(repository.save(originalUser.get()));
         } else {
-            log.info("[UserServiceImpl] -> updated name of user with id {}", id);
-            user.setEmail(originalUser.getEmail());
+            log.info("[UserServiceImpl] -> user with id {} not fount", userId);
+            throw new UserNotFoundException(String.join(" ",
+                    "[UserServiceImpl] -> user with id", userId.toString(), "do not found"));
         }
-        if (nonNull(user.getName()) && !user.getName().isEmpty()) {
-            log.info("[UserServiceImpl] -> updated name of user with id {}", id);
-        } else {
-            user.setName(originalUser.getName());
-        }
-        log.info("[UserServiceImpl] -> data of user with id {} updated", id);
-        return repository.save(user);
     }
 
     @Override
-    public List<User> getAll() {
-        log.info("[UserServiceImpl] -> getting all users from database");
-        return repository.findAll();
-    }
-
-    @Override
-    public User getBy(@NotNull Integer id) throws UserNotFoundException {
-        log.info("[UserServiceImpl] -> trying to find user with id {} in database", id);
-        return repository.findById(id)
+    public UserDto getBy(@NotNull Integer userId) {
+        return toUserDto(repository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(String.join(" ",
-                        "[UserServiceImpl] -> user with id", id.toString(), "do not exists")));
+                        "[UserServiceImpl] -> user with id", userId.toString(), "do not found"))));
     }
 
-    @Override
     @Transactional
-    public void delete(@NotNull Integer id) throws UserNotFoundException {
-        log.info("[UserServiceImpl] -> trying to delete user with id {} in database", id);
-        repository.deleteById(id);
+    @Override
+    public void delete(@NotNull Integer userId) {
+        log.info("[UserServiceImpl] -> trying to delete user with id {} in database", userId);
+        if (repository.findById(userId).isPresent()) {
+            repository.deleteById(userId);
+        } else {
+            log.info("[UserServiceImpl] -> user with id {} not fount", userId);
+            throw new UserNotFoundException(String.join(" ",
+                    "[UserServiceImpl] -> user with id", userId.toString(), "do not found"));
+        }
     }
 }
