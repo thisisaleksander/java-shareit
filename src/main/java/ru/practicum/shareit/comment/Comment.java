@@ -1,9 +1,6 @@
 package ru.practicum.shareit.comment;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 

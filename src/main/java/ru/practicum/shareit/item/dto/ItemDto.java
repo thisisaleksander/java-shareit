@@ -4,8 +4,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.user.User;
 
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Data

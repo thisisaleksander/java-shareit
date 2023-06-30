@@ -6,7 +6,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.model.ItemWithBooking;
 
-import java.util.Collection;
 import java.util.List;
 
 @Transactional(readOnly = true)
