@@ -1,7 +1,5 @@
 package ru.practicum.shareit.validation;
 
-import lombok.NonNull;
-
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 

@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
         User user = repository.findByEmail(email);
         return user != null;
     }
+
     @Override
     public List<UserDto> getAll() {
         return repository.findAll().stream()
