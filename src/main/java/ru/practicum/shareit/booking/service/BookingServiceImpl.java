@@ -117,10 +117,10 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     @Override
     public Booking add(Integer userId, BookingDto bookingDto) {
+        User user = toUser(userService.getBy(userId));
         if (!bookingDto.getStartTime().isBefore(bookingDto.getEndTime())) {
             throw new InvalidBookingException("[BookingServiceImpl] -> booking is invalid");
         }
-        User user = toUser(userService.getBy(userId));
         Item item = itemService.getByItemId(bookingDto.getItemId());
         if (Objects.equals(userId, item.getOwner().getId())) {
             throw new InvalidOwnerException(String.join(" ",

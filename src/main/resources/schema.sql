@@ -13,7 +13,7 @@ create table if not exists items (
     owner_id bigint not null,
     request_id bigint,
     constraint fk_items_to_users foreign key (owner_id) references users(id),
-    unique(id)
+    unique (id)
 );
 
 create table if not exists comments (
@@ -24,7 +24,7 @@ create table if not exists comments (
     text varchar(250),
     constraint fk_comments_to_items foreign key (item_id) references items(id),
     constraint fk_comments_to_users foreign key (author_id) references users(id),
-    unique(id)
+    unique (id)
 );
 
 create table if not exists bookings (
@@ -36,5 +36,5 @@ create table if not exists bookings (
     end_time timestamp,
     constraint fk_booking_to_users foreign key (booker_id) references users(id),
     constraint fk_booking_to_items foreign key (item_id) references items(id),
-    unique(id)
+    unique (id)
 );

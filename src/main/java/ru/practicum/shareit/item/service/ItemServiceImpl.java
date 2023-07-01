@@ -61,11 +61,28 @@ public class ItemServiceImpl implements ItemService {
             log.warn("[ItemServiceImpl] -> item is not available");
             throw new ItemIsNotAvailableException("[ItemServiceImpl] -> item is not available");
         }
+        if (nonNull(itemDto.getDescription())) {
+            if (itemDto.getDescription().isEmpty()) {
+                log.warn("[ItemServiceImpl] -> item is not available");
+                throw new ItemIsNotAvailableException("[ItemServiceImpl] -> item is not available");
+            }
+        } else {
+            log.warn("[ItemServiceImpl] -> item is not available");
+            throw new ItemIsNotAvailableException("[ItemServiceImpl] -> item is not available");
+        }
+        if (nonNull(itemDto.getName())) {
+            if (itemDto.getName().isEmpty()) {
+                log.warn("[ItemServiceImpl] -> item is not available");
+                throw new ItemIsNotAvailableException("[ItemServiceImpl] -> item is not available");
+            }
+        } else {
+            log.warn("[ItemServiceImpl] -> item is not available");
+            throw new ItemIsNotAvailableException("[ItemServiceImpl] -> item is not available");
+        }
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(String.join(" ",
+                 .orElseThrow(() -> new UserNotFoundException(String.join(" ",
                         "[ItemServiceImpl] -> user with id", userId.toString(), "not found")));
         Item item = toItem(itemDto, user);
-        checkIfUserExists(userId);
         log.info("[ItemServiceImpl] -> saving new item");
         return itemRepository.save(item);
     }
@@ -156,7 +173,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> userItems = itemRepository
                 .getItemByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text);
         for (int i = 0; i < userItems.size(); i++) {
-            if (!userItems.get(i).isAvailable()) userItems.remove(i);
+            if (!userItems.get(i).getAvailable()) userItems.remove(i);
         }
         log.info("[ItemServiceImpl] -> total items found: {}", userItems.size());
         return toItemsDto(userItems);

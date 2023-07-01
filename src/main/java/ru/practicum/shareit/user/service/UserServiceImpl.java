@@ -15,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,7 @@ public class UserServiceImpl implements UserService {
     public UserDto save(@Valid UserDto userDto) throws UserEmailAlreadyExistsException {
         User user = toUser(userDto);
         if (isEmailAlreadyExists(user.getEmail())) {
+            repository.save(user);
             throw new UserEmailAlreadyExistsException(String.join(" ",
                     "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
         }
@@ -69,18 +71,20 @@ public class UserServiceImpl implements UserService {
                 log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
             }
             if (nonNull(user.getEmail()) && !user.getEmail().isEmpty()) {
-                if(!isEmailAlreadyExists(user.getEmail())) {
-                    if (isValidEmail(user.getEmail())) {
-                        originalUser.get().setEmail(user.getEmail());
-                        log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
+                if (!Objects.equals(originalUser.get().getEmail(), user.getEmail())) {
+                    if (!isEmailAlreadyExists(user.getEmail())) {
+                        if (isValidEmail(user.getEmail())) {
+                            originalUser.get().setEmail(user.getEmail());
+                            log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
+                        } else {
+                            log.info("[UserServiceImpl] -> invalid user email {}", userId);
+                            throw new InvalidUserEmailException(String.join(" ",
+                                    "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
+                        }
                     } else {
-                        log.info("[UserServiceImpl] -> invalid user email {}", userId);
-                        throw new InvalidUserEmailException(String.join(" ",
+                        throw new UserEmailAlreadyExistsException(String.join(" ",
                                 "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
                     }
-                } else {
-                    throw new UserEmailAlreadyExistsException(String.join(" ",
-                            "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
                 }
             }
             return toUserDto(repository.save(originalUser.get()));
