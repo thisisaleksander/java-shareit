@@ -1,4 +1,4 @@
-package ru.practicum.shareit.comment.storage;
+package ru.practicum.shareit.comment.service;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

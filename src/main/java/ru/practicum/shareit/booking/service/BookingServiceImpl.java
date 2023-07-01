@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.exception.InvalidBookingException;
 import ru.practicum.shareit.booking.exception.InvalidStatusException;
-import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.exception.InvalidOwnerException;

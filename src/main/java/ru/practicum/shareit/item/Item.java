@@ -31,10 +31,6 @@ public class Item {
     @ManyToOne
     private User owner;
 
-    public Boolean isAvailable() {
-        return available;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(id, name, description, owner, available);

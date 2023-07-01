@@ -18,7 +18,7 @@ public final class ItemMapper {
                 .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
-                .available(itemDto.isAvailable())
+                .available(itemDto.getAvailable())
                 .owner(user)
                 .build();
     }
@@ -28,7 +28,7 @@ public final class ItemMapper {
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
-                .available(item.isAvailable())
+                .available(item.getAvailable())
                 .build();
     }
 
@@ -38,7 +38,7 @@ public final class ItemMapper {
         itemWithBooking.setName(item.getName());
         itemWithBooking.setDescription(item.getDescription());
         itemWithBooking.setUser(item.getOwner());
-        itemWithBooking.setIsAvailable(item.getAvailable());
+        itemWithBooking.setAvailable(item.getAvailable());
         itemWithBooking.setLastBooking(lastBooking);
         itemWithBooking.setNextBooking(nextBooking);
         itemWithBooking.setComments(comments);

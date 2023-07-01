@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.storage;
+package ru.practicum.shareit.item.service;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ItemRepository extends JpaRepository<Item, Long> {
+public interface ItemRepository extends JpaRepository<Item, Integer> {
     List<Item> findByOwnerId(Integer userId);
 
     Optional<Item> findById(Integer id);

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.storage;
+package ru.practicum.shareit.booking.service;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

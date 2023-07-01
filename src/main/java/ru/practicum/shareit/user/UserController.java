@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.exception.UserEmailAlreadyExistsException;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
@@ -19,7 +20,11 @@ public class UserController {
     @PostMapping
     public UserDto create(@RequestBody @Valid UserDto userDto) {
         log.info("[UserController] -> create user request");
-        return userService.save(userDto);
+        try {
+            return userService.save(userDto);
+        } catch (UserEmailAlreadyExistsException exception) {
+        throw new RuntimeException(exception);
+    }
     }
 
     @GetMapping

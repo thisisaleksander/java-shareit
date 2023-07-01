@@ -20,7 +20,7 @@ public class ItemWithBooking {
     String name;
     String description;
     User user;
-    Boolean isAvailable;
+    Boolean available;
     BookingDto lastBooking;
     BookingDto nextBooking;
     List<Comment> comments;

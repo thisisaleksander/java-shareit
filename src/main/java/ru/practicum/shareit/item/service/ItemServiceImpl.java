@@ -7,20 +7,19 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.storage.BookingRepository;
+import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.comment.Comment;
-import ru.practicum.shareit.comment.storage.CommentRepository;
+import ru.practicum.shareit.comment.service.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.InvalidOwnerException;
 import ru.practicum.shareit.item.exception.ItemIsNotAvailableException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.exception.ItemNotFountException;
-import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.item.model.ItemWithBooking;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
-import ru.practicum.shareit.user.storage.UserRepository;
+import ru.practicum.shareit.user.service.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,6 @@ import static ru.practicum.shareit.item.mapper.ItemMapper.*;
 @Transactional(readOnly = true)
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ItemServiceImpl implements ItemService {
-
     ItemRepository itemRepository;
     UserRepository userRepository;
     BookingRepository bookingRepository;
@@ -61,8 +59,7 @@ public class ItemServiceImpl implements ItemService {
     public Item add(Integer userId, ItemDto itemDto) {
         if (itemDto.getAvailable() == null || !itemDto.getAvailable()) {
             log.warn("[ItemServiceImpl] -> item is not available");
-            throw new ItemIsNotAvailableException(String.join(" ",
-                    "[ItemServiceImpl] -> item with id", itemDto.getId().toString(), "is not available"));
+            throw new ItemIsNotAvailableException("[ItemServiceImpl] -> item is not available");
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(String.join(" ",

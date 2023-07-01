@@ -19,8 +19,4 @@ public class ItemDto {
     private String description;
     private Boolean available;
     private User owner;
-
-    public Boolean isAvailable() {
-        return available;
-    }
 }

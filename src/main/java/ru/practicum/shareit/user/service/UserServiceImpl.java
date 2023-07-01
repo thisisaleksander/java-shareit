@@ -7,9 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.InvalidUserEmailException;
+import ru.practicum.shareit.user.exception.UserEmailAlreadyExistsException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,8 +28,12 @@ import static ru.practicum.shareit.validation.EmailValidator.isValidEmail;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
-    UserRepository repository;
+    private final UserRepository repository;
 
+    private boolean isEmailAlreadyExists(String email) {
+        User user = repository.findByEmail(email);
+        return user != null;
+    }
     @Override
     public List<UserDto> getAll() {
         return repository.findAll().stream()
@@ -38,15 +42,22 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     @Override
-    public UserDto save(@Valid UserDto userDto) {
+    @Transactional
+    public UserDto save(@Valid UserDto userDto) throws UserEmailAlreadyExistsException {
         User user = toUser(userDto);
+        if (isEmailAlreadyExists(user.getEmail())) {
+            throw new UserEmailAlreadyExistsException(String.join(" ",
+                    "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
+        }
+        if (!isValidEmail(user.getEmail())) {
+            throw new InvalidUserEmailException("[UserServiceImpl] -> email is invalid:");
+        }
         return toUserDto(repository.save(user));
     }
 
-    @Transactional
     @Override
+    @Transactional
     public UserDto update(@NotNull Integer userId, @Valid UserDto userDto) {
         User user = toUser(userDto);
         log.info("[UserServiceImpl] -> user from DTO successfully created");
@@ -58,12 +69,17 @@ public class UserServiceImpl implements UserService {
                 log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
             }
             if (nonNull(user.getEmail()) && !user.getEmail().isEmpty()) {
-                if (isValidEmail(user.getEmail())) {
-                    originalUser.get().setEmail(user.getEmail());
-                    log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
+                if(!isEmailAlreadyExists(user.getEmail())) {
+                    if (isValidEmail(user.getEmail())) {
+                        originalUser.get().setEmail(user.getEmail());
+                        log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
+                    } else {
+                        log.info("[UserServiceImpl] -> invalid user email {}", userId);
+                        throw new InvalidUserEmailException(String.join(" ",
+                                "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
+                    }
                 } else {
-                    log.info("[UserServiceImpl] -> invalid user email {}", userId);
-                    throw new InvalidUserEmailException(String.join(" ",
+                    throw new UserEmailAlreadyExistsException(String.join(" ",
                             "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
                 }
             }
@@ -82,8 +98,8 @@ public class UserServiceImpl implements UserService {
                         "[UserServiceImpl] -> user with id", userId.toString(), "do not found"))));
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void delete(@NotNull Integer userId) {
         log.info("[UserServiceImpl] -> trying to delete user with id {} in database", userId);
         if (repository.findById(userId).isPresent()) {

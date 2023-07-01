@@ -14,6 +14,5 @@ public class UserDto {
     private Integer id;
     @Size(min = 2, max = 30)
     private String name;
-    @Email
     private String email;
 }
