@@ -58,7 +58,7 @@ public class BookingServiceImpl implements BookingService {
             case "REJECTED":
                 return bookingRepository.getBookingByUserIdAndByStatusContainingIgnoreCase(userId, state);
         }
-        throw new ValidationException("[BookingService] -> UNSUPPORTED_STATUS");
+        throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
     }
 
     @Override
@@ -77,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
             case "REJECTED":
                 return bookingRepository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state);
         }
-        throw new ValidationException("[BookingService] -> UNSUPPORTED_STATUS");
+        throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
     }
 
     @Transactional
