@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.AccessLevel;
-import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
@@ -11,20 +10,23 @@ import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.comment.service.CommentRepository;
-import ru.practicum.shareit.error.exception.*;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.model.ItemWithBooking;
+import ru.practicum.shareit.item.dto.ItemDto;
+import lombok.extern.slf4j.Slf4j;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.service.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
-import static java.util.Objects.nonNull;
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toBookingDto;
-import static ru.practicum.shareit.item.mapper.ItemMapper.*;
+import static ru.practicum.shareit.booking.mapper.BookingMapper.toDto;
+import static ru.practicum.shareit.item.mapper.ItemMapper.mapToItem;
+import static ru.practicum.shareit.item.mapper.ItemMapper.mapToItemDto;
 
 @Slf4j
 @Service
@@ -37,103 +39,30 @@ public class ItemServiceImpl implements ItemService {
     BookingRepository bookingRepository;
     CommentRepository commentRepository;
 
-    private void checkIfOwnerIsCorrect(Integer userId, Item item) throws ValidationException {
-        if (!Objects.equals(userId, item.getOwner().getId())) {
-            log.info("[ItemServiceImpl] -> user {} is not the owner of item {}", userId, item.getId());
-            throw new ValidationException(String.join(" ",
-                    "[ItemServiceImpl] -> user", userId.toString(), "is not the owner of this item"));
-        }
-    }
-
-    private void checkIfUserExists(Integer userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[ItemServiceImpl] -> user with id", userId.toString(), "not found")));
+    @Override
+    public Collection<ItemWithBooking> getItemsBy(long userId) {
+        validateUserId(userId);
+        return mapToItemWithBooking(itemRepository.findByUserId(userId));
     }
 
     @Override
-    @Transactional
-    public Item add(Integer userId, ItemDto itemDto) throws ValidationException {
-        if (itemDto.getAvailable() == null || !itemDto.getAvailable()) {
-            log.warn("[ItemServiceImpl] -> item is not available");
-            throw new ValidationException("[ItemServiceImpl] -> item is not available");
-        }
-        if (nonNull(itemDto.getDescription())) {
-            if (itemDto.getDescription().isEmpty()) {
-                log.warn("[ItemServiceImpl] -> item is not available");
-                throw new ValidationException("[ItemServiceImpl] -> item is not available");
-            }
-        } else {
-            log.warn("[ItemServiceImpl] -> item is not available");
-            throw new ValidationException("[ItemServiceImpl] -> item is not available");
-        }
-        if (nonNull(itemDto.getName())) {
-            if (itemDto.getName().isEmpty()) {
-                log.warn("[ItemServiceImpl] -> item is not available");
-                throw new ValidationException("[ItemServiceImpl] -> item is not available");
-            }
-        } else {
-            log.warn("[ItemServiceImpl] -> item is not available");
-            throw new ValidationException("[ItemServiceImpl] -> item is not available");
-        }
-        User user = userRepository.findById(userId)
-                 .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[ItemServiceImpl] -> user with id", userId.toString(), "not found")));
-        Item item = toItem(itemDto, user);
-        log.info("[ItemServiceImpl] -> saving new item");
-        return itemRepository.save(item);
-    }
-
-    @Override
-    @Transactional
-    public ItemDto update(Integer userId, ItemDto itemDto, Integer itemId) {
-        checkIfUserExists(userId);
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[ItemServiceImpl] -> item with id", userId.toString(), "not found")));
-        if (nonNull(itemDto.getName())) {
-            item.setName(itemDto.getName());
-            log.info("[ItemServiceImpl] -> item {} name updated", itemId);
-        }
-        if (nonNull(itemDto.getDescription())) {
-            item.setDescription(itemDto.getDescription());
-            log.info("[ItemServiceImpl] -> item {} description updated", itemId);
-        }
-        if (nonNull(itemDto.getAvailable())) {
-            item.setAvailable(itemDto.getAvailable());
-            log.info("[ItemServiceImpl] -> item {} availability updated", itemId);
-        }
-        itemRepository.save(item);
-        log.info("[ItemServiceImpl] -> item {} data updated", itemId);
-        return toItemDto(item);
-    }
-
-    @Override
-    public List<ItemWithBooking> getByUserId(Integer userId) {
-        checkIfUserExists(userId);
-        return mapToItemWithBooking(itemRepository.findByOwnerId(userId));
-    }
-
-    @Override
-    public ItemWithBooking getByItemId(Integer userId, Integer itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[ItemServiceImpl] -> item with id", itemId.toString(), "not found")));
+    public ItemWithBooking getItemById(long userId, long itemId) {
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.format("Item with =%d not found", itemId)));
         BookingDto lastBooking;
         BookingDto nextBooking;
-        if (Objects.equals(userId, item.getOwner().getId())) {
+        if (userId == item.getUser().getId()) {
             Booking lastBookingForDto = bookingRepository
-                    .findFirstByItemIdAndStartTimeBeforeAndStatusOrderByStartTimeDesc(item.getId(),
+                    .findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(item.getId(),
                             LocalDateTime.now(),
                             "APPROVED")
                     .orElse(null);
             if (lastBookingForDto == null) {
                 lastBooking = null;
             } else {
-                lastBooking = toBookingDto(lastBookingForDto);
+                lastBooking = toDto(lastBookingForDto);
             }
-            Booking nextBookingForDto = bookingRepository
-                    .findFirstByItemIdAndEndTimeAfterAndStatusOrderByStartTimeAsc(item.getId(),
+            Booking nextBookingForDto = bookingRepository.findFirstByItemIdAndEndAfterAndStatusOrderByStartAsc(
+                            item.getId(),
                             LocalDateTime.now(),
                             "APPROVED")
                     .orElse(null);
@@ -145,98 +74,135 @@ public class ItemServiceImpl implements ItemService {
             if (nextBookingForDto == null) {
                 nextBooking = null;
             } else {
-                nextBooking = toBookingDto(nextBookingForDto);
+                nextBooking = toDto(nextBookingForDto);
             }
         } else {
             lastBooking = null;
             nextBooking = null;
         }
         List<Comment> comments = commentRepository.findAllByItemId(itemId);
-        return toItemWithBooking(item, lastBooking, nextBooking, comments);
+        return ItemMapper.mapToItemWithBooking(item, lastBooking, nextBooking, comments);
     }
 
     @Override
-    public Item getByItemId(Integer itemId) {
+    public Item getItemById(long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[ItemServiceImpl] -> item with id", itemId.toString(), "not found")));
+                .orElseThrow(() -> new NotFoundException(String.format("Item with =%d not found", itemId)));
     }
 
-    @Override
-    public List<ItemDto> findByText(String text) {
-        if (text.isBlank()) {
-            return new ArrayList<>();
-        }
-        List<Item> userItems = itemRepository
-                .getItemByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text);
-        for (int i = 0; i < userItems.size(); i++) {
-            if (!userItems.get(i).getAvailable()) userItems.remove(i);
-        }
-        log.info("[ItemServiceImpl] -> total items found: {}", userItems.size());
-        return toItemsDto(userItems);
-    }
-
-    @Override
     @Transactional
-    public void delete(Integer userId, Integer itemId) throws ValidationException {
-        checkIfUserExists(userId);
-        checkIfOwnerIsCorrect(userId,
-                itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[ItemServiceImpl] -> item with id", itemId.toString(), "not found"))));
-        log.info("[ItemServiceImpl] -> deleting item with id {}", itemId);
-        itemRepository.deleteByOwnerIdAndId(userId, itemId);
+    @Override
+    public ItemDto update(long userId, ItemDto itemDto, long itemId) {
+        validateUserId(userId);
+        Item item = itemRepository.findById(itemId).get();
+        if (itemDto.getName() != null) {
+            item.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+        itemRepository.save(item);
+        log.info("[ItemService] -> item with id {} updated", itemId);
+        return mapToItemDto(item);
+    }
+
+    @Transactional
+    @Override
+    public Item add(long userId, ItemDto itemDto) throws ValidationException {
+
+        if (itemDto.getAvailable() == null || !itemDto.getAvailable()) {
+            throw new ValidationException("[ItemService] -> item is not available");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("[ItemService] -> user not found"));
+        Item item = mapToItem(user, itemDto);
+        validateUserId(userId);
+        return itemRepository.save(item);
+    }
+
+    @Transactional
+    @Override
+    public void delete(long userId, long itemId) {
+        log.info("[ItemService] -> deleting item with id {}", itemId);
+        validateUserId(userId);
+        validateOwner(userId, itemRepository.findById(itemId).get());
+        itemRepository.deleteByUserIdAndId(userId, itemId);
     }
 
     @Override
-    public Comment comment(Integer userId, Comment comment, Integer itemId) throws ValidationException {
-        log.info("[ItemServiceImpl] -> new comment fot item with id {}", itemId);
-        List<Booking> bookings = bookingRepository.getBookingByUserIdAndEndTimeAfterNow(userId);
+    public Comment addComment(long userId, Comment comment, long itemId) throws ValidationException {
+        List<Booking> bookings = bookingRepository.getBookingByUserIdAndFinishAfterNow(userId);
         boolean userIsBooker = false;
         for (Booking booking: bookings) {
-            if (Objects.equals(booking.getItem().getId(), itemId)) {
+            if (booking.getItem().getId() == itemId) {
                 userIsBooker = true;
                 break;
             }
         }
         if (userIsBooker) {
-            comment.setItem(itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.join(" ",
-                    "[ItemServiceImpl] -> item with id", itemId.toString(), "not found"))));
-            comment.setAuthor(userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.join(" ",
-                    "[ItemServiceImpl] -> user with id", userId.toString(), "not found"))));
+            comment.setItem(itemRepository.findById(itemId).orElseThrow(
+                    () -> new NotFoundException("[ItemService] -> item not found"))
+            );
+            comment.setAuthorName(userRepository.findById(userId).orElseThrow(
+                    () -> new NotFoundException("[ItemService] -> user not found")).getName()
+            );
             comment.setCreated(LocalDateTime.now());
             return commentRepository.save(comment);
-        } else throw new ValidationException(String.join(" ",
-                "[ItemServiceImpl] -> owner of item with id", itemId.toString(), "not valid"));
+        } else throw new ValidationException("[ItemService] -> user did not book this item");
+    }
+
+    @Override
+    public List<ItemDto> findByText(String query) {
+        log.info("[ItemService] -> trying to find items by {}", query);
+        if (query.isBlank()) {
+            log.warn("[ItemService] -> query from request is blank");
+            return new ArrayList<>();
+        }
+        List<Item> userItems = itemRepository.getItemByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query);
+        for (int i = 0; i < userItems.size(); i++) {
+            if (!userItems.get(i).getAvailable()) {
+                userItems.remove(i);
+            }
+        }
+        log.info("[ItemService] -> total found: {}", userItems.size());
+        return mapToItemDto(userItems);
+    }
+
+    private void validateOwner(long userId, Item item) {
+        if (userId != item.getUser().getId()) {
+            log.warn("[ItemService] -> user id is incorrect");
+            throw new NotFoundException("[ItemService] -> user is not the owner");
+        }
+    }
+
+    private void validateUserId(long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id %d not found", userId)));
     }
 
     public List<ItemWithBooking> mapToItemWithBooking(Iterable<Item> items) {
-        List<ItemWithBooking> itemWithBooking = new ArrayList<>();
+        List<ItemWithBooking> itemWithBookings = new ArrayList<>();
         for (Item item : items) {
-            Booking lastBookingForDto = bookingRepository.findFirstByItemIdAndStartTimeBeforeAndStatusOrderByStartTimeDesc(
-                            item.getId(),
-                            LocalDateTime.now(),
-                            "APPROVED")
-                    .orElse(null);
+            Booking lastBookingForDto = bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(item.getId(), LocalDateTime.now(), "APPROVED").orElse(null);
             BookingDto lastBooking;
             if (lastBookingForDto == null) {
                 lastBooking = null;
             } else {
-                lastBooking = toBookingDto(lastBookingForDto);
+                lastBooking = toDto(lastBookingForDto);
             }
-            Booking nextBookingForDto = bookingRepository.findFirstByItemIdAndEndTimeAfterAndStatusOrderByStartTimeAsc(
-                            item.getId(),
-                            LocalDateTime.now(),
-                            "APPROVED")
-                    .orElse(null);
+            Booking nextBookingForDto = bookingRepository.findFirstByItemIdAndEndAfterAndStatusOrderByStartAsc(item.getId(), LocalDateTime.now(), "APPROVED").orElse(null);
             BookingDto nextBooking;
             if (nextBookingForDto == null) {
                 nextBooking = null;
             } else {
-                nextBooking = toBookingDto(nextBookingForDto);
+                nextBooking = toDto(nextBookingForDto);
             }
             List<Comment> comments = commentRepository.findAllByItemId(item.getId());
-            itemWithBooking.add(toItemWithBooking(item, lastBooking, nextBooking, comments));
+            itemWithBookings.add(ItemMapper.mapToItemWithBooking(item, lastBooking, nextBooking, comments));
         }
-        return itemWithBooking;
+        return itemWithBookings;
     }
 }

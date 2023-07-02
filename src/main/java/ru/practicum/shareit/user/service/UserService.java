@@ -2,18 +2,18 @@ package ru.practicum.shareit.user.service;
 
 import ru.practicum.shareit.error.exception.AlreadyExistException;
 import ru.practicum.shareit.error.exception.ValidationException;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.User;
 
 import java.util.List;
 
 public interface UserService {
-    List<UserDto> getAll();
+    List<User> getAll();
 
-    UserDto save(UserDto userDto) throws AlreadyExistException, ValidationException;
+    User save(User user) throws AlreadyExistException;
 
-    UserDto update(Integer userId, UserDto userDto) throws ValidationException;
+    User update(long userId, User user) throws ValidationException;
 
-    UserDto getBy(Integer userId);
+    User getByUserId(long userId);
 
-    void delete(Integer userId);
+    void delete(long userId);
 }

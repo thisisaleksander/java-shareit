@@ -7,24 +7,24 @@ import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 @NoArgsConstructor
-public final class BookingMapper {
-    public static Booking toBooking(User user, Item item, BookingDto dto) {
+public class BookingMapper {
+    public static Booking toEntity(User user, Item item, BookingDto dto) {
         Booking booking = new Booking();
         booking.setId(dto.getId());
         booking.setBooker(user);
         booking.setItem(item);
-        booking.setStartTime(dto.getStartTime());
-        booking.setEndTime(dto.getEndTime());
+        booking.setStart(dto.getStart());
+        booking.setEnd(dto.getEnd());
         return booking;
     }
 
-    public static BookingDto toBookingDto(Booking booking) {
+    public static BookingDto toDto(Booking booking) {
         return new BookingDto(
                 booking.getId(),
                 booking.getItem().getId(),
                 booking.getBooker().getId(),
-                booking.getStartTime(),
-                booking.getEndTime()
+                booking.getStart(),
+                booking.getEnd()
         );
     }
 }

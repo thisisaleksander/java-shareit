@@ -2,11 +2,9 @@ package ru.practicum.shareit.comment;
 
 import lombok.Data;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -16,24 +14,24 @@ import java.util.Objects;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private long id;
+    @ManyToOne
+    private Item item;
+    @Column(name = "author_name")
+    private String authorName;
     @Column(name = "created")
-    private LocalDateTime created;
-    @NotNull
+    LocalDateTime created;
     @NotBlank
     @Column(name = "text")
     private String text;
-    @ManyToOne
-    private Item item;
-    @ManyToOne
-    private User author;
+
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Comment comment = (Comment) o;
-        return Objects.equals(id, comment.id) &&
+        return id == comment.id &&
                 Objects.equals(item, comment.item) &&
                 Objects.equals(text, comment.text);
     }

@@ -10,53 +10,69 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, Integer> { ;
-    @Query("select booking from Booking as booking join booking.booker as user " +
-            "where user.id = ?1 order by booking.startTime desc")
-    List<Booking> findByUserId(Integer userId);
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+    Optional<Booking> findById(long id);
 
-    @Query("select booking from Booking as booking join booking.booker as user " +
-            "where user.id = ?1 and booking.status like ?2 order by booking.startTime desc")
-    List<Booking> getBookingByUserIdAndByStatusContainingIgnoreCase(Integer userId, String status);
+    Optional<Booking> findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(long id, LocalDateTime start, String status);
 
-    @Query("select booking from Booking as booking join booking.booker as user where user.id = ?1 " +
-            "and booking.startTime <= current_timestamp and booking.endTime >= current_timestamp order by booking.startTime desc")
-    List<Booking> getCurrentByUserId(Integer userId);
+    Optional<Booking> findFirstByItemIdAndEndAfterAndStatusOrderByStartAsc(long id, LocalDateTime end, String status);
 
-    @Query("select booking from Booking as booking join booking.booker as user where user.id = ?1 " +
-            "and booking.endTime <= current_timestamp order by booking.startTime desc")
-    List<Booking> getBookingByUserIdAndEndTimeAfterNow(Integer userId);
+    @Query("select b from Booking as b " +
+            "join b.booker as u where u.id = ?1 " +
+            "order by b.start desc")
 
-    @Query("select booking from Booking as booking join booking.booker as user where user.id = ?1 " +
-            "and booking.startTime >= current_timestamp order by booking.startTime desc")
-    List<Booking> getBookingByUserIdAndStarTimeBeforeNow(Integer userId);
+    List<Booking> findByUserId(long userId);
 
-    @Query("select booking from Booking as booking join booking.item as item join item.owner as owner " +
-            "where owner.id = ?1 order by booking.startTime desc")
-    List<Booking> findByOwner(Integer userId);
+    @Query("select b from Booking as b " +
+            "join b.booker as u where u.id = ?1 and b.status like ?2 " +
+            "order by b.start desc")
+    List<Booking> getBookingByUserIdAndByStatusContainingIgnoreCase(long userId, String state);
 
-    @Query("select booking from Booking as booking join booking.item as item join item.owner as owner " +
-            "where owner.id = ?1 and booking.status like ?2 order by booking.startTime")
-    List<Booking> getBookingByOwnerIdAndByStatusContainingIgnoreCase(Integer userId, String state);
+    @Query("select b from Booking as b " +
+            "join b.booker as u where u.id = ?1 and b.start < current_timestamp and b.end > current_timestamp  " +
+            "order by b.start desc")
+    List<Booking> getCurrentByUserId(long userId);
 
-    @Query("select booking from Booking as booking join booking.item as item join item.owner as owner " +
-            "where owner.id = ?1 and booking.startTime <= current_timestamp and booking.endTime >= current_timestamp " +
-            "order by booking.startTime desc")
-    List<Booking> getCurrentByOwner(Integer userId);
+    @Query("select b from Booking as b " +
+            "join b.booker as u where u.id = ?1 and b.end < current_timestamp " +
+            "order by b.start desc")
+    List<Booking> getBookingByUserIdAndFinishAfterNow(long userId);
 
-    @Query("select booking from Booking as booking join booking.item as item join item.owner as owner " +
-            "where owner.id = ?1 and booking.endTime <= current_timestamp order by booking.startTime desc")
-    List<Booking> getPastBookingByOwner(Integer userId);
+    @Query("select b from Booking as b " +
+            "join b.booker as u where u.id = ?1 and b.start > current_timestamp " +
+            "order by b.start desc")
+    List<Booking> getBookingByUserIdAndStarBeforeNow(long userId);
 
-    @Query("select booking from Booking as booking join booking.item as item join item.owner as owner " +
-            "where owner.id = ?1 and booking.startTime >= current_timestamp order by booking.startTime desc")
-    List<Booking> getBookingByOwnerAndStarTimeBeforeNow(Integer userId);
 
-    Optional<Booking> findFirstByItemIdAndStartTimeBeforeAndStatusOrderByStartTimeDesc(Integer itemId,
-                                                                                       LocalDateTime startTime,
-                                                                                       String status);
+    @Query("select b  from Booking as b " +
+            "join b.item as i " +
+            "join i.user as u " +
+            "where u.id = ?1 " +
+            "order by b.start desc")
+    List<Booking> findByOwnerId(long userId);
 
-    Optional<Booking> findFirstByItemIdAndEndTimeAfterAndStatusOrderByStartTimeAsc(Integer itemId,
-                                                                                   LocalDateTime endTime,
-                                                                                   String status);
+    @Query("select b  from Booking as b " +
+            "join b.item as i " +
+            "join i.user as u " +
+            "where u.id = ?1 and b.status like ?2 " +
+            "order by b.start desc")
+    List<Booking> getBookingByOwnerIdAndByStatusContainingIgnoreCase(long userId, String state);
+
+    @Query("select b from Booking as b " +
+            "join b.item as i " +
+            "join i.user as u where u.id = ?1 and b.start < current_timestamp and b.end > current_timestamp " +
+            "order by b.start desc")
+    List<Booking> getCurrentByOwnerId(long userId);
+
+    @Query("select b from Booking as b " +
+            "join b.item as i " +
+            "join i.user as u where u.id = ?1 and b.end < current_timestamp " +
+            "order by b.start desc")
+    List<Booking> getPastByOwnerId(long userId);
+
+    @Query("select b from Booking as b " +
+            "join b.item as i " +
+            "join i.user as u where u.id = ?1 and b.start > current_timestamp " +
+            "order by b.start desc")
+    List<Booking> getBookingByOwnerIdAndStarBeforeNow(long userId);
 }

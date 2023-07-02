@@ -2,8 +2,8 @@ package ru.practicum.shareit.item.mapper;
 
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.model.ItemWithBooking;
 import ru.practicum.shareit.user.User;
@@ -11,33 +11,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
-public final class ItemMapper {
+public class ItemMapper {
 
-    public static Item toItem(ItemDto itemDto, User user) {
-        return Item.builder()
-                .id(itemDto.getId())
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .owner(user)
-                .build();
+    public static Item mapToItem(User user, ItemDto dto) {
+        Item item = new Item();
+        item.setId(dto.getId());
+        item.setName(dto.getName());
+        item.setDescription(dto.getDescription());
+        item.setCount(dto.getCount());
+        item.setUser(user);
+        item.setAvailable(dto.getAvailable());
+        return item;
     }
 
-    public static ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .build();
+    public static ItemDto mapToItemDto(Item item) {
+        return new ItemDto(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getCount(),
+                item.getAvailable()
+        );
     }
 
-    public static ItemWithBooking toItemWithBooking(Item item, BookingDto lastBooking, BookingDto nextBooking, List<Comment> comments) {
+    public static ItemWithBooking mapToItemWithBooking(Item item, BookingDto lastBooking, BookingDto nextBooking, List<Comment> comments) {
         ItemWithBooking itemWithBooking = new ItemWithBooking();
         itemWithBooking.setId(item.getId());
         itemWithBooking.setName(item.getName());
         itemWithBooking.setDescription(item.getDescription());
-        itemWithBooking.setUser(item.getOwner());
+        itemWithBooking.setCount(item.getCount());
+        itemWithBooking.setUser(item.getUser());
         itemWithBooking.setAvailable(item.getAvailable());
         itemWithBooking.setLastBooking(lastBooking);
         itemWithBooking.setNextBooking(nextBooking);
@@ -45,11 +48,11 @@ public final class ItemMapper {
         return itemWithBooking;
     }
 
-    public static List<ItemDto> toItemsDto(Iterable<Item> items) {
-        List<ItemDto> dtos = new ArrayList<>();
+    public static List<ItemDto> mapToItemDto(Iterable<Item> items) {
+        List<ItemDto> allDto = new ArrayList<>();
         for (Item item : items) {
-            dtos.add(toItemDto(item));
+            allDto.add(mapToItemDto(item));
         }
-        return dtos;
+        return allDto;
     }
 }

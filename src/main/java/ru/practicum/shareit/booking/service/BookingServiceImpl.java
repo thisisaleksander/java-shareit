@@ -7,17 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.error.exception.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.service.UserService;
 import java.util.List;
-import java.util.Objects;
 
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toBooking;
-import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
+import static ru.practicum.shareit.booking.mapper.BookingMapper.toEntity;
 
 @Slf4j
 @Service
@@ -30,76 +29,68 @@ public class BookingServiceImpl implements BookingService {
     BookingRepository bookingRepository;
 
     @Override
-    public Booking getBookingById(Integer userId, Integer bookingId) throws ValidationException {
-        userService.getBy(userId);
+    public Booking getBookingById(long userId, long bookingId) {
+        userService.getByUserId(userId);
         Booking  booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[BookingServiceImpl] -> booking with id", bookingId.toString(), "not found")));
+                .orElseThrow(() -> new NotFoundException(String.format("[BookingService] -> Booking with id =%d not found", bookingId)));
         User user = booking.getBooker();
-        User owner = booking.getItem().getOwner();
-        if (Objects.equals(userId, user.getId()) || Objects.equals(userId, owner.getId())) {
-            log.info("[BookingServiceImpl] -> found booking with id {}", bookingId);
+        User owner = booking.getItem().getUser();
+        if (userId == user.getId() || userId == owner.getId()) {
+            log.info("[BookingService] -> found correct booking");
             return booking;
         }
-        throw new ValidationException(String.join(" ",
-                "[BookingServiceImpl] -> user is not then owner of booking with id", bookingId.toString()));
+        throw new NotFoundException(String.format("[BookingService] -> User with id =%d is not the owner", userId));
     }
 
     @Override
-    public List<Booking> getByUserId(Integer userId, String status) throws ValidationException {
-        userService.getBy(userId);
-        switch (status) {
+    public List<Booking> getByUserId(long userId, String state) throws ValidationException {
+        userService.getByUserId(userId);
+        switch (state) {
             case "ALL":
                 return bookingRepository.findByUserId(userId);
             case "CURRENT":
                 return bookingRepository.getCurrentByUserId(userId);
             case "PAST":
-                return bookingRepository.getBookingByUserIdAndEndTimeAfterNow(userId);
+                return bookingRepository.getBookingByUserIdAndFinishAfterNow(userId);
             case "FUTURE":
-                return bookingRepository.getBookingByUserIdAndStarTimeBeforeNow(userId);
+                return bookingRepository.getBookingByUserIdAndStarBeforeNow(userId);
             case "WAITING":
             case "REJECTED":
-                return bookingRepository.getBookingByUserIdAndByStatusContainingIgnoreCase(userId, status);
+                return bookingRepository.getBookingByUserIdAndByStatusContainingIgnoreCase(userId, state);
         }
-        throw new ValidationException(String.join(" ",
-                "[BookingServiceImpl] -> unknown status:", status));
+        throw new ValidationException("[BookingService] -> Unknown status");
     }
 
     @Override
-    public List<Booking> getByOwnerId(Integer userId, String status) throws ValidationException {
-        userService.getBy(userId);
-        switch (status) {
+    public List<Booking> getByOwnerId(long userId, String state) throws ValidationException {
+        userService.getByUserId(userId);
+        switch (state) {
             case "ALL":
-                return bookingRepository.findByOwner(userId);
+                return bookingRepository.findByOwnerId(userId);
             case "CURRENT":
-                return bookingRepository.getCurrentByOwner(userId);
+                return bookingRepository.getCurrentByOwnerId(userId);
             case "PAST":
-                return bookingRepository.getPastBookingByOwner(userId);
+                return bookingRepository.getPastByOwnerId(userId);
             case "FUTURE":
-                return bookingRepository.getBookingByOwnerAndStarTimeBeforeNow(userId);
+                return bookingRepository.getBookingByOwnerIdAndStarBeforeNow(userId);
             case "WAITING":
             case "REJECTED":
-                return bookingRepository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, status);
+                return bookingRepository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state);
         }
-        throw new ValidationException(String.join(" ",
-                "[BookingServiceImpl] -> unknown status:", status));
+        throw new ValidationException("[BookingService] -> Unknown status");
     }
 
     @Transactional
     @Override
-    public Booking approve(Integer userId, Integer bookingId, Boolean approve) throws ValidationException {
-        userService.getBy(userId);
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[BookingServiceImpl] -> booking with id", bookingId.toString(), "not found")));
+    public Booking approveBooking(long userId, long bookingId, boolean approve) throws ValidationException {
+        userService.getByUserId(userId);
+        Booking  booking = bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException(String.format("Booking with id =%d not found", bookingId)));
         if (booking.getStatus().equals("APPROVED")) {
-            throw new ValidationException(String.join(" ",
-                    "[BookingServiceImpl] -> booking", bookingId.toString(), "already approved"));
+            throw new ValidationException(String.format("[BookingService] -> Booking with id =%d already approved", bookingId));
         }
-        User owner = booking.getItem().getOwner();
-        if (!Objects.equals(userId, owner.getId())) {
-            throw new ValidationException(String.join(" ",
-                    "[BookingServiceImpl] -> user is not then owner of booking with id", bookingId.toString()));
+        User owner = booking.getItem().getUser();
+        if (userId != (owner.getId())) {
+            throw new NotFoundException(String.format("[BookingService] -> User with id =%d is not the owner", userId));
         }
         if (approve) {
             booking.setStatus("APPROVED");
@@ -107,31 +98,26 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus("REJECTED");
         }
         bookingRepository.save(booking);
-        log.info("[BookingServiceImpl] -> booking {} approved", bookingId);
         return booking;
     }
 
     @Transactional
     @Override
-    public Booking add(Integer userId, BookingDto bookingDto) throws ValidationException {
-        if (!bookingDto.getStartTime().isBefore(bookingDto.getEndTime())) {
-            throw new ValidationException("[BookingServiceImpl] -> booking is invalid");
+    public Booking addNewBooking(long userId, BookingDto bookingDto) throws ValidationException {
+        if (!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
+            throw new ValidationException("[BookingService] -> start time must be before end time");
         }
-        User user = toUser(userService.getBy(userId));
-        Item item = itemService.getByItemId(bookingDto.getItemId());
-        if (Objects.equals(userId, item.getOwner().getId())) {
-            throw new NotFoundException(String.join(" ",
-                    "[BookingServiceImpl] -> user is not then owner of booking with id",
-                    bookingDto.getId().toString()));
+        User user = userService.getByUserId(userId);
+        Item item = itemService.getItemById(bookingDto.getItemId());
+        if (userId == item.getUser().getId()) {
+            throw  new NotFoundException(String.format("[BookingService] -> user with ID =%d is not the owner", userId));
         }
         if (!item.getAvailable()) {
-            throw new ValidationException(String.join(" ",
-                    "[BookingServiceImpl] -> booking", bookingDto.getId().toString(), "is not available"));
+            throw new ValidationException("[BookingService] -> Item is not available for booking");
         }
-        Booking booking = toBooking(user, item, bookingDto);
+        Booking booking = toEntity(user, item, bookingDto);
         booking.setStatus("WAITING");
         bookingRepository.save(booking);
-        log.info("[BookingServiceImpl] -> added new booking with id {}", booking.getId());
         return booking;
     }
 }

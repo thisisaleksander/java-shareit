@@ -11,6 +11,7 @@ import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.model.ItemWithBooking;
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
 
 import static ru.practicum.shareit.constant.Constants.X_SHARER_USER_ID;
@@ -24,50 +25,50 @@ public class ItemController {
     ItemService itemService;
 
     @GetMapping
-    public List<ItemWithBooking> getByUserId(@RequestHeader(value = X_SHARER_USER_ID) Integer userId) {
-        log.info("[ItemController] -> get item by user id request");
-        return itemService.getByUserId(userId);
+    public Collection<ItemWithBooking> getItemsBy(@RequestHeader(value = X_SHARER_USER_ID) long userId) {
+        log.info("[ItemController] -> get item request");
+        return itemService.getItemsBy(userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithBooking getById(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
-                                   @PathVariable Integer itemId) {
-        log.info("[ItemController] -> get item by id request");
-        return itemService.getByItemId(userId, itemId);
+    public ItemWithBooking getByItemId(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                                       @PathVariable long itemId) {
+        log.info("[ItemController] -> get item id request");
+        return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> findByText(@RequestParam(name = "text") String text) {
-        log.info("[ItemController] -> get items by key word request");
-        return itemService.findByText(text);
+    public List<ItemDto> findByText(@RequestParam(name = "text") String query) {
+        log.info("[ItemController] -> get item by text request");
+        return itemService.findByText(query);
     }
 
     @PostMapping
-    public Item create(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
-                       @RequestBody @Valid ItemDto itemDto) throws ValidationException {
-        log.info("[ItemController] -> create item request");
+    public Item add(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                    @RequestBody @Valid ItemDto itemDto) throws ValidationException {
+        log.info("[ItemController] -> create new item request");
         return itemService.add(userId, itemDto);
     }
 
     @PostMapping("/{itemId}/comment")
-    public Comment comment(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
-                           @RequestBody @Valid Comment comment,
-                           @PathVariable Integer itemId) throws ValidationException {
-        log.info("[ItemController] -> add comment to item request");
-        return itemService.comment(userId, comment, itemId);
+    public Comment addComment(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                              @RequestBody @Valid Comment comment,
+                              @PathVariable long itemId) throws ValidationException {
+        log.info("[ItemController] -> add new comment request");
+        return itemService.addComment(userId, comment, itemId);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
+    public ItemDto update(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                           @RequestBody ItemDto itemDto,
-                          @PathVariable Integer itemId) {
+                          @PathVariable long itemId) {
         log.info("[ItemController] -> update item request");
         return itemService.update(userId, itemDto, itemId);
     }
 
     @DeleteMapping("/{itemId}")
-    public void delete(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
-                       @PathVariable Integer itemId) throws ValidationException {
+    public void deleteItem(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                           @PathVariable long itemId) {
         log.info("[ItemController] -> delete item request");
         itemService.delete(userId, itemId);
     }

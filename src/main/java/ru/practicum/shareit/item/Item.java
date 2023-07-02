@@ -5,36 +5,26 @@ import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.util.Objects;
-
 
 @Data
 @Entity
-@Builder
-@AllArgsConstructor
-@RequiredArgsConstructor
 @Table(name = "items")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @Size(max = 50)
+    long id;
     @Column(name = "name")
-    private String name;
-    @Size(max = 250)
+    String name;
     @Column(name = "description")
-    private String description;
-    @Column(name = "is_available")
-    private Boolean available;
+    String description;
+    @Column(name = "count")
+    long count;
     @ManyToOne
-    private User owner;
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, description, owner, available);
-    }
+    private User user;
+    @Column(name = "available")
+    Boolean available;
 
     @Override
     public boolean equals(Object o) {
@@ -44,7 +34,13 @@ public class Item {
         return Objects.equals(id, item.id) &&
                 Objects.equals(name, item.name) &&
                 Objects.equals(description, item.description) &&
-                Objects.equals(owner, item.owner) &&
+                Objects.equals(count, item.count) &&
+                Objects.equals(user, item.user) &&
                 Objects.equals(available, item.available);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, count, user, available);
     }
 }

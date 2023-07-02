@@ -10,26 +10,29 @@ import java.util.Objects;
 
 @Data
 @Entity
-@AllArgsConstructor
-@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "bookings", schema = "public")
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @Column(name = "start_time")
-    private LocalDateTime startTime;
-    @Column(name = "end_time")
-    private LocalDateTime endTime;
+    long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    User booker;
+
     @ManyToOne
     @JoinColumn(name = "item_id")
-    private Item item;
-    @ManyToOne
-    @JoinColumn(name = "booker_id")
-    private User booker;
-    @Column(name = "status")
-    private String status;
+    Item item;
+
+    @Column
+    String status;
+
+    @Column(name = "start")
+    LocalDateTime start;
+
+    @Column(name = "finish")
+    LocalDateTime end;
 
     @Override
     public boolean equals(Object o) {
@@ -37,16 +40,16 @@ public class Booking {
         if (o == null || getClass() != o.getClass()) return false;
         Booking booking = (Booking) o;
         return Objects.equals(id, booking.id) &&
-                Objects.equals(status, booking.status) &&
-                Objects.equals(startTime, booking.startTime) &&
-                Objects.equals(endTime, booking.endTime) &&
+                status == booking.status &&
+                Objects.equals(start, booking.start) &&
+                Objects.equals(end, booking.end) &&
                 Objects.equals(booker, booking.booker) &&
                 Objects.equals(item, booking.item);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, status, startTime, endTime, booker, item);
+        return Objects.hash(id, status, start, end, booker, item);
     }
 
 }

@@ -8,21 +8,9 @@ import ru.practicum.shareit.error.exception.AlreadyExistException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
-import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
-import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
-import static ru.practicum.shareit.validation.EmailValidator.isValidEmail;
 
 @Slf4j
 @Service
@@ -31,88 +19,47 @@ import static ru.practicum.shareit.validation.EmailValidator.isValidEmail;
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
-    private boolean isEmailAlreadyExists(String email) {
-        User user = repository.findByEmail(email);
-        return user != null;
+    @Override
+    public List<User> getAll() {
+        return repository.findAll();
     }
 
-    @Override
-    public List<UserDto> getAll() {
-        return repository.findAll().stream()
-                .map(UserMapper::toUserDto)
-                .sorted(Comparator.comparing(UserDto::getId))
-                .collect(Collectors.toList());
-    }
-
-    @Override
     @Transactional
-    public UserDto save(@Valid UserDto userDto) throws AlreadyExistException, ValidationException {
-        User user = toUser(userDto);
-        if (isEmailAlreadyExists(user.getEmail())) {
-            repository.save(user);
-            throw new AlreadyExistException(String.join(" ",
-                    "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
-        }
-        if (!isValidEmail(user.getEmail())) {
-            throw new ValidationException("[UserServiceImpl] -> email is invalid:");
-        }
-        return toUserDto(repository.save(user));
+    @Override
+    public User save(User user) throws AlreadyExistException {
+        log.info("[UserService] -> saving new user");
+        return repository.save(user);
     }
 
-    @Override
     @Transactional
-    public UserDto update(@NotNull Integer userId, @Valid UserDto userDto) throws ValidationException {
-        User user = toUser(userDto);
-        log.info("[UserServiceImpl] -> user from DTO successfully created");
+    @Override
+    public User update(long userId, User user) throws ValidationException {
         user.setId(userId);
-        Optional<User> originalUser = repository.findById(userId);
-        if (originalUser.isPresent()) {
-            if (nonNull(user.getName()) && !user.getName().isEmpty()) {
-                originalUser.get().setName(user.getName());
-                log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
-            }
-            if (nonNull(user.getEmail()) && !user.getEmail().isEmpty()) {
-                if (!Objects.equals(originalUser.get().getEmail(), user.getEmail())) {
-                    if (!isEmailAlreadyExists(user.getEmail())) {
-                        if (isValidEmail(user.getEmail())) {
-                            originalUser.get().setEmail(user.getEmail());
-                            log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
-                        } else {
-                            log.info("[UserServiceImpl] -> invalid user email {}", userId);
-                            throw new ValidationException(String.join(" ",
-                                    "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
-                        }
-                    } else {
-                        throw new AlreadyExistException(String.join(" ",
-                                "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
-                    }
-                }
-            }
-            return toUserDto(repository.save(originalUser.get()));
-        } else {
-            log.info("[UserServiceImpl] -> user with id {} not fount", userId);
-            throw new NotFoundException(String.join(" ",
-                    "[UserServiceImpl] -> user with id", userId.toString(), "do not found"));
+        Optional<User> userTemp = repository.findById(userId);
+        if (user.getName() == null) {
+            user.setName(userTemp.get().getName());
         }
+        if (user.getEmail() == null) {
+            user.setEmail(userTemp.get().getEmail());
+        }
+        log.info("[UserService] -> user with id {} updated", userId);
+        return repository.save(user);
     }
 
     @Override
-    public UserDto getBy(@NotNull Integer userId) {
-        return toUserDto(repository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.join(" ",
-                        "[UserServiceImpl] -> user with id", userId.toString(), "do not found"))));
+    public User getByUserId(long userId) {
+        log.info("[UserService] -> trying to find user with id {}", userId);
+        return repository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("[UserService] -> user with id {} not found", userId);
+                    return new NotFoundException(String.format("User with id %d not found", userId));
+                });
     }
 
-    @Override
     @Transactional
-    public void delete(@NotNull Integer userId) {
-        log.info("[UserServiceImpl] -> trying to delete user with id {} in database", userId);
-        if (repository.findById(userId).isPresent()) {
-            repository.deleteById(userId);
-        } else {
-            log.info("[UserServiceImpl] -> user with id {} not fount", userId);
-            throw new NotFoundException(String.join(" ",
-                    "[UserServiceImpl] -> user with id", userId.toString(), "do not found"));
-        }
+    @Override
+    public void delete(long userId) {
+        log.info("[UserService] -> deleting user with id {}", userId);
+        repository.deleteById(userId);
     }
 }

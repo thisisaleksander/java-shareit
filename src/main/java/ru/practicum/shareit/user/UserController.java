@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.error.exception.AlreadyExistException;
 import ru.practicum.shareit.error.exception.ValidationException;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
@@ -18,36 +17,35 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
-    public UserDto create(@RequestBody @Valid UserDto userDto) {
-        log.info("[UserController] -> create user request");
-        try {
-            return userService.save(userDto);
-        } catch (AlreadyExistException | ValidationException exception) {
-        throw new RuntimeException(exception);
-    }
-    }
-
     @GetMapping
-    public List<UserDto> getAll() {
-        log.info("[UserController] -> get all users request");
+    public List<User> getAll() {
         return userService.getAll();
     }
 
+    @PostMapping
+    public User save(@RequestBody @Valid User user) throws ValidationException {
+        log.info("[UserController] -> create user request");
+        try {
+            return userService.save(user);
+        } catch (AlreadyExistException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @PatchMapping("/{userId}")
-    public UserDto update(@RequestBody UserDto userDto, @PathVariable Integer userId) throws ValidationException {
+    public User update(@RequestBody User user, @PathVariable long userId) throws ValidationException {
         log.info("[UserController] -> update user request");
-        return userService.update(userId, userDto);
+        return userService.update(userId, user);
     }
 
     @GetMapping("/{userId}")
-    public UserDto getById(@PathVariable Integer userId) {
-        log.info("[UserController] -> update user request");
-        return userService.getBy(userId);
+    public User getByUserId(@PathVariable long userId) {
+        log.info("[UserController] -> get user by id request");
+        return userService.getByUserId(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public void delete(@PathVariable Integer userId) {
+    public void delete(@PathVariable long userId) {
         log.info("[UserController] -> delete user request");
         userService.delete(userId);
     }

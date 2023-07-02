@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ItemRepository extends JpaRepository<Item, Integer> {
-    List<Item> findByOwnerId(Integer userId);
+public interface ItemRepository extends JpaRepository<Item, Long> {
+    List<Item> findByUserId(long userId);
 
-    Optional<Item> findById(Integer id);
+    Optional<Item> findById(long id);
 
-    void deleteByOwnerIdAndId(Integer userId, Integer itemId);
+    void deleteByUserIdAndId(long userId, long itemId);
 
     List<Item> getItemByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String query, String query1);
 }
