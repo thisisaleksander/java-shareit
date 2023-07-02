@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.error.exception.AlreadyExistException;
+import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.exception.InvalidUserEmailException;
-import ru.practicum.shareit.user.exception.UserEmailAlreadyExistsException;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.mapper.UserMapper;
 
 import javax.validation.Valid;
@@ -46,22 +46,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto save(@Valid UserDto userDto) throws UserEmailAlreadyExistsException {
+    public UserDto save(@Valid UserDto userDto) throws AlreadyExistException, ValidationException {
         User user = toUser(userDto);
         if (isEmailAlreadyExists(user.getEmail())) {
             repository.save(user);
-            throw new UserEmailAlreadyExistsException(String.join(" ",
+            throw new AlreadyExistException(String.join(" ",
                     "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
         }
         if (!isValidEmail(user.getEmail())) {
-            throw new InvalidUserEmailException("[UserServiceImpl] -> email is invalid:");
+            throw new ValidationException("[UserServiceImpl] -> email is invalid:");
         }
         return toUserDto(repository.save(user));
     }
 
     @Override
     @Transactional
-    public UserDto update(@NotNull Integer userId, @Valid UserDto userDto) {
+    public UserDto update(@NotNull Integer userId, @Valid UserDto userDto) throws ValidationException {
         User user = toUser(userDto);
         log.info("[UserServiceImpl] -> user from DTO successfully created");
         user.setId(userId);
@@ -79,11 +79,11 @@ public class UserServiceImpl implements UserService {
                             log.info("[UserServiceImpl] -> updated name of user with id {}", userId);
                         } else {
                             log.info("[UserServiceImpl] -> invalid user email {}", userId);
-                            throw new InvalidUserEmailException(String.join(" ",
+                            throw new ValidationException(String.join(" ",
                                     "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
                         }
                     } else {
-                        throw new UserEmailAlreadyExistsException(String.join(" ",
+                        throw new AlreadyExistException(String.join(" ",
                                 "[UserServiceImpl] -> email", user.getEmail(), "already exists"));
                     }
                 }
@@ -91,7 +91,7 @@ public class UserServiceImpl implements UserService {
             return toUserDto(repository.save(originalUser.get()));
         } else {
             log.info("[UserServiceImpl] -> user with id {} not fount", userId);
-            throw new UserNotFoundException(String.join(" ",
+            throw new NotFoundException(String.join(" ",
                     "[UserServiceImpl] -> user with id", userId.toString(), "do not found"));
         }
     }
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getBy(@NotNull Integer userId) {
         return toUserDto(repository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(String.join(" ",
+                .orElseThrow(() -> new NotFoundException(String.join(" ",
                         "[UserServiceImpl] -> user with id", userId.toString(), "do not found"))));
     }
 
@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
             repository.deleteById(userId);
         } else {
             log.info("[UserServiceImpl] -> user with id {} not fount", userId);
-            throw new UserNotFoundException(String.join(" ",
+            throw new NotFoundException(String.join(" ",
                     "[UserServiceImpl] -> user with id", userId.toString(), "do not found"));
         }
     }

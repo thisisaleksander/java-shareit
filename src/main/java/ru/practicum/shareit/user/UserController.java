@@ -3,8 +3,9 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.error.exception.AlreadyExistException;
+import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.exception.UserEmailAlreadyExistsException;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
@@ -22,7 +23,7 @@ public class UserController {
         log.info("[UserController] -> create user request");
         try {
             return userService.save(userDto);
-        } catch (UserEmailAlreadyExistsException exception) {
+        } catch (AlreadyExistException | ValidationException exception) {
         throw new RuntimeException(exception);
     }
     }
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto update(@RequestBody UserDto userDto, @PathVariable Integer userId) {
+    public UserDto update(@RequestBody UserDto userDto, @PathVariable Integer userId) throws ValidationException {
         log.info("[UserController] -> update user request");
         return userService.update(userId, userDto);
     }

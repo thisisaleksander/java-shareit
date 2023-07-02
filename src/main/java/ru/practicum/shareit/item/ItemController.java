@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.item.service.ItemService;
@@ -43,7 +44,7 @@ public class ItemController {
 
     @PostMapping
     public Item create(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
-                       @RequestBody @Valid ItemDto itemDto) {
+                       @RequestBody @Valid ItemDto itemDto) throws ValidationException {
         log.info("[ItemController] -> create item request");
         return itemService.add(userId, itemDto);
     }
@@ -51,7 +52,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public Comment comment(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
                            @RequestBody @Valid Comment comment,
-                           @PathVariable Integer itemId) {
+                           @PathVariable Integer itemId) throws ValidationException {
         log.info("[ItemController] -> add comment to item request");
         return itemService.comment(userId, comment, itemId);
     }
@@ -66,7 +67,7 @@ public class ItemController {
 
     @DeleteMapping("/{itemId}")
     public void delete(@RequestHeader(value = X_SHARER_USER_ID) Integer userId,
-                       @PathVariable Integer itemId) {
+                       @PathVariable Integer itemId) throws ValidationException {
         log.info("[ItemController] -> delete item request");
         itemService.delete(userId, itemId);
     }
