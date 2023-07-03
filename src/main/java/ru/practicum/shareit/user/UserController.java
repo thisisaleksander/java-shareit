@@ -23,13 +23,9 @@ public class UserController {
     }
 
     @PostMapping
-    public User save(@RequestBody @Valid User user) throws ValidationException {
+    public User save(@RequestBody @Valid User user) throws AlreadyExistException {
         log.info("[UserController] -> create user request");
-        try {
-            return userService.save(user);
-        } catch (AlreadyExistException e) {
-            throw new RuntimeException(e);
-        }
+        return userService.save(user);
     }
 
     @PatchMapping("/{userId}")

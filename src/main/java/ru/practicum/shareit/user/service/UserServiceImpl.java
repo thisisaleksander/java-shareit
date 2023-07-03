@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.error.exception.AlreadyExistException;
-import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.UserNotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 
@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
         return repository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("[UserService] -> user with id {} not found", userId);
-                    return new NotFoundException(String.format("User with id %d not found", userId));
+                    return new UserNotFoundException(userId);
                 });
     }
 

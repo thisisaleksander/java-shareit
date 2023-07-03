@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.error.exception.BookingNotFoundException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
@@ -32,14 +33,14 @@ public class BookingServiceImpl implements BookingService {
     public Booking getBookingById(long userId, long bookingId) {
         userService.getByUserId(userId);
         Booking  booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException(String.format("[BookingService] -> Booking with id =%d not found", bookingId)));
+                .orElseThrow(() -> new BookingNotFoundException(bookingId));
         User user = booking.getBooker();
         User owner = booking.getItem().getUser();
         if (userId == user.getId() || userId == owner.getId()) {
             log.info("[BookingService] -> found correct booking");
             return booking;
         }
-        throw new NotFoundException(String.format("[BookingService] -> User with id =%d is not the owner", userId));
+        throw new NotFoundException(String.format("User with id =%d is not the owner", userId));
     }
 
     @Override
@@ -57,8 +58,9 @@ public class BookingServiceImpl implements BookingService {
             case "WAITING":
             case "REJECTED":
                 return bookingRepository.getBookingByUserIdAndByStatusContainingIgnoreCase(userId, state);
+            default:
+                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
     }
 
     @Override
@@ -76,21 +78,22 @@ public class BookingServiceImpl implements BookingService {
             case "WAITING":
             case "REJECTED":
                 return bookingRepository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state);
+            default:
+                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
     }
 
     @Transactional
     @Override
     public Booking approveBooking(long userId, long bookingId, boolean approve) throws ValidationException {
         userService.getByUserId(userId);
-        Booking  booking = bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException(String.format("Booking with id =%d not found", bookingId)));
+        Booking  booking = bookingRepository.findById(bookingId).orElseThrow(() -> new BookingNotFoundException(bookingId));
         if (booking.getStatus().equals("APPROVED")) {
-            throw new ValidationException(String.format("[BookingService] -> Booking with id =%d already approved", bookingId));
+            throw new ValidationException(String.format("Booking with id =%d already approved", bookingId));
         }
         User owner = booking.getItem().getUser();
         if (userId != (owner.getId())) {
-            throw new NotFoundException(String.format("[BookingService] -> User with id =%d is not the owner", userId));
+            throw new NotFoundException(String.format("User with id =%d is not the owner", userId));
         }
         if (approve) {
             booking.setStatus("APPROVED");
@@ -105,15 +108,15 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking addNewBooking(long userId, BookingDto bookingDto) throws ValidationException {
         if (!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
-            throw new ValidationException("[BookingService] -> start time must be before end time");
+            throw new ValidationException("Start time must be before end time");
         }
         User user = userService.getByUserId(userId);
         Item item = itemService.getItemById(bookingDto.getItemId());
         if (userId == item.getUser().getId()) {
-            throw  new NotFoundException(String.format("[BookingService] -> user with ID =%d is not the owner", userId));
+            throw  new NotFoundException(String.format("User with ID =%d is not the owner", userId));
         }
         if (!item.getAvailable()) {
-            throw new ValidationException("[BookingService] -> Item is not available for booking");
+            throw new ValidationException("Item is not available for booking");
         }
         Booking booking = toEntity(user, item, bookingDto);
         booking.setStatus("WAITING");

@@ -10,7 +10,9 @@ import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.comment.service.CommentRepository;
+import ru.practicum.shareit.error.exception.ItemNotFoundException;
 import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.UserNotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -19,7 +21,8 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.service.UserRepository;
-import java.time.LocalDateTime;
+import ru.practicum.shareit.utils.DateUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,21 +42,23 @@ public class ItemServiceImpl implements ItemService {
     BookingRepository bookingRepository;
     CommentRepository commentRepository;
 
+    DateUtils dateUtils = new DateUtils();
+
     @Override
     public Collection<ItemWithBooking> getItemsBy(long userId) {
-        validateUserId(userId);
+        checkExistUserById(userId);
         return mapToItemWithBooking(itemRepository.findByUserId(userId));
     }
 
     @Override
     public ItemWithBooking getItemById(long userId, long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.format("Item with =%d not found", itemId)));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(itemId));
         BookingDto lastBooking;
         BookingDto nextBooking;
         if (userId == item.getUser().getId()) {
             Booking lastBookingForDto = bookingRepository
                     .findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(item.getId(),
-                            LocalDateTime.now(),
+                            dateUtils.now(),
                             "APPROVED")
                     .orElse(null);
             if (lastBookingForDto == null) {
@@ -63,7 +68,7 @@ public class ItemServiceImpl implements ItemService {
             }
             Booking nextBookingForDto = bookingRepository.findFirstByItemIdAndEndAfterAndStatusOrderByStartAsc(
                             item.getId(),
-                            LocalDateTime.now(),
+                            dateUtils.now(),
                             "APPROVED")
                     .orElse(null);
             if (nextBookingForDto != null && lastBookingForDto != null) {
@@ -87,13 +92,13 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item getItemById(long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.format("Item with =%d not found", itemId)));
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
     }
 
     @Transactional
     @Override
     public ItemDto update(long userId, ItemDto itemDto, long itemId) {
-        validateUserId(userId);
+        checkExistUserById(userId);
         Item item = itemRepository.findById(itemId).get();
         if (itemDto.getName() != null) {
             item.setName(itemDto.getName());
@@ -114,12 +119,12 @@ public class ItemServiceImpl implements ItemService {
     public Item add(long userId, ItemDto itemDto) throws ValidationException {
 
         if (itemDto.getAvailable() == null || !itemDto.getAvailable()) {
-            throw new ValidationException("[ItemService] -> item is not available");
+            throw new ValidationException("Item is not available");
         }
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("[ItemService] -> user not found"));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         Item item = mapToItem(user, itemDto);
-        validateUserId(userId);
+        checkExistUserById(userId);
         return itemRepository.save(item);
     }
 
@@ -127,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void delete(long userId, long itemId) {
         log.info("[ItemService] -> deleting item with id {}", itemId);
-        validateUserId(userId);
+        checkExistUserById(userId);
         validateOwner(userId, itemRepository.findById(itemId).get());
         itemRepository.deleteByUserIdAndId(userId, itemId);
     }
@@ -144,14 +149,14 @@ public class ItemServiceImpl implements ItemService {
         }
         if (userIsBooker) {
             comment.setItem(itemRepository.findById(itemId).orElseThrow(
-                    () -> new NotFoundException("[ItemService] -> item not found"))
+                    () -> new ItemNotFoundException(itemId))
             );
             comment.setAuthorName(userRepository.findById(userId).orElseThrow(
-                    () -> new NotFoundException("[ItemService] -> user not found")).getName()
+                    () -> new UserNotFoundException(userId)).getName()
             );
-            comment.setCreated(LocalDateTime.now());
+            comment.setCreated(dateUtils.now());
             return commentRepository.save(comment);
-        } else throw new ValidationException("[ItemService] -> user did not book this item");
+        } else throw new ValidationException("User did not book this item");
     }
 
     @Override
@@ -174,26 +179,34 @@ public class ItemServiceImpl implements ItemService {
     private void validateOwner(long userId, Item item) {
         if (userId != item.getUser().getId()) {
             log.warn("[ItemService] -> user id is incorrect");
-            throw new NotFoundException("[ItemService] -> user is not the owner");
+            throw new NotFoundException("User is not the owner");
         }
     }
 
-    private void validateUserId(long userId) {
+    private void checkExistUserById(long userId) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User with id %d not found", userId)));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     public List<ItemWithBooking> mapToItemWithBooking(Iterable<Item> items) {
         List<ItemWithBooking> itemWithBookings = new ArrayList<>();
         for (Item item : items) {
-            Booking lastBookingForDto = bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(item.getId(), LocalDateTime.now(), "APPROVED").orElse(null);
+            Booking lastBookingForDto = bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
+                    item.getId(),
+                    dateUtils.now(),
+                    "APPROVED")
+                    .orElse(null);
             BookingDto lastBooking;
             if (lastBookingForDto == null) {
                 lastBooking = null;
             } else {
                 lastBooking = toDto(lastBookingForDto);
             }
-            Booking nextBookingForDto = bookingRepository.findFirstByItemIdAndEndAfterAndStatusOrderByStartAsc(item.getId(), LocalDateTime.now(), "APPROVED").orElse(null);
+            Booking nextBookingForDto = bookingRepository.findFirstByItemIdAndEndAfterAndStatusOrderByStartAsc(
+                    item.getId(),
+                    dateUtils.now(),
+                    "APPROVED")
+                    .orElse(null);
             BookingDto nextBooking;
             if (nextBookingForDto == null) {
                 nextBooking = null;
