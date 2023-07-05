@@ -1,30 +1,46 @@
 package ru.practicum.shareit.item;
 
 import lombok.*;
-import ru.practicum.shareit.request.ItemRequest;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.user.User;
 
-import javax.validation.constraints.Size;
-
-/**
- * TODO Sprint add-controllers.
- */
+import javax.persistence.*;
+import java.util.Objects;
 
 @Data
-@Builder
-@AllArgsConstructor
-@RequiredArgsConstructor
+@Entity
+@Table(name = "items")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Item {
-    private Integer id;
-    @Size(max = 50)
-    private String name;
-    @Size(max = 250)
-    private String description;
-    private Boolean available;
-    private User owner;
-    private ItemRequest request;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    long id;
+    @Column(name = "name")
+    String name;
+    @Column(name = "description")
+    String description;
+    @Column(name = "count")
+    long count;
+    @ManyToOne
+    private User user;
+    @Column(name = "available")
+    Boolean available;
 
-    public Boolean isAvailable() {
-        return available;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return Objects.equals(id, item.id) &&
+                Objects.equals(name, item.name) &&
+                Objects.equals(description, item.description) &&
+                Objects.equals(count, item.count) &&
+                Objects.equals(user, item.user) &&
+                Objects.equals(available, item.available);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, count, user, available);
     }
 }

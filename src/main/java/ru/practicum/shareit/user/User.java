@@ -1,22 +1,26 @@
 package ru.practicum.shareit.user;
 
 import lombok.*;
-
+import lombok.experimental.FieldDefaults;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Size;
-
-/**
- *  TODO Sprint add-controllers.
- */
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
-@Builder
-@AllArgsConstructor
-@RequiredArgsConstructor
+@Entity
+@Table(name = "users", schema = "public")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    private Integer id;
-    @Size(min = 2, max = 30)
-    private String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    long id;
+    @Column(name = "email", nullable = false)
+    @NotNull
     @Email
-    private String email;
+    String email;
+    @Column(name = "name", nullable = false)
+    @NotNull
+    @NotBlank
+    String name;
 }

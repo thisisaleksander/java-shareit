@@ -1,25 +1,55 @@
 package ru.practicum.shareit.booking;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
-
+import javax.persistence.*;
 import java.time.LocalDateTime;
-
-/**
- * TODO Sprint add-bookings.
- */
+import java.util.Objects;
 
 @Data
-@AllArgsConstructor
-@RequiredArgsConstructor
+@Entity
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "bookings", schema = "public")
 public class Booking {
-    private Integer id;
-    private LocalDateTime start;
-    private LocalDateTime end;
-    private Item item;
-    private User booker;
-    private String status;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    User booker;
+
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    Item item;
+
+    @Column
+    String status;
+
+    @Column(name = "start")
+    LocalDateTime start;
+
+    @Column(name = "finish")
+    LocalDateTime end;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Booking booking = (Booking) o;
+        return Objects.equals(id, booking.id) &&
+                status == booking.status &&
+                Objects.equals(start, booking.start) &&
+                Objects.equals(end, booking.end) &&
+                Objects.equals(booker, booking.booker) &&
+                Objects.equals(item, booking.item);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, status, start, end, booker, item);
+    }
+
 }

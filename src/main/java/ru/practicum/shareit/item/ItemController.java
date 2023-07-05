@@ -1,56 +1,75 @@
 package ru.practicum.shareit.item;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.item.service.ItemService;
-
+import ru.practicum.shareit.item.model.ItemWithBooking;
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-/**
- * TODO Sprint add-controllers.
- */
+import static ru.practicum.shareit.constant.Constants.X_SHARER_USER_ID;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/items")
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ItemController {
-    private final ItemService itemService;
+    ItemService itemService;
 
-    @PostMapping
-    public ItemDto create(@RequestBody @Valid ItemDto itemDto,
-                          @RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
-        log.info("[ItemController] -> create item request");
-        return itemService.create(itemDto, userId);
-    }
-
-    @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestBody @Valid ItemDto itemDto,
-                          @PathVariable(value = "itemId") Integer itemId,
-                          @RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
-        log.info("[ItemController] -> update item request");
-        return itemService.update(itemDto, itemId, userId);
+    @GetMapping
+    public Collection<ItemWithBooking> getItemsBy(@RequestHeader(value = X_SHARER_USER_ID) long userId) {
+        log.info("[ItemController] -> get item request");
+        return itemService.getItemsBy(userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getBy(@PathVariable(value = "itemId") Integer itemId) {
-        log.info("[ItemController] -> get item by id request");
-        return itemService.getBy(itemId);
-    }
-
-    @GetMapping
-    public Set<ItemDto> findBy(@RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
-        log.info("[ItemController] -> get items by user request");
-        return itemService.findBy(userId);
+    public ItemWithBooking getByItemId(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                                       @PathVariable long itemId) {
+        log.info("[ItemController] -> get item id request");
+        return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> findBy(@RequestParam(value = "text") String text) {
-        log.info("[ItemController] -> get items by key word request");
-        return itemService.findBy(text);
+    public List<ItemDto> findByText(@RequestParam(name = "text") String query) {
+        log.info("[ItemController] -> get item by text request");
+        return itemService.findByText(query);
+    }
+
+    @PostMapping
+    public Item add(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                    @RequestBody @Valid ItemDto itemDto) throws ValidationException {
+        log.info("[ItemController] -> create new item request");
+        return itemService.add(userId, itemDto);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public Comment addComment(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                              @RequestBody @Valid Comment comment,
+                              @PathVariable long itemId) throws ValidationException {
+        log.info("[ItemController] -> add new comment request");
+        return itemService.addComment(userId, comment, itemId);
+    }
+
+    @PatchMapping("/{itemId}")
+    public ItemDto update(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                          @RequestBody ItemDto itemDto,
+                          @PathVariable long itemId) {
+        log.info("[ItemController] -> update item request");
+        return itemService.update(userId, itemDto, itemId);
+    }
+
+    @DeleteMapping("/{itemId}")
+    public void deleteItem(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                           @PathVariable long itemId) {
+        log.info("[ItemController] -> delete item request");
+        itemService.delete(userId, itemId);
     }
 }
