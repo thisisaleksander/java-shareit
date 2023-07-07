@@ -19,11 +19,11 @@ public class BookingDto {
     long itemId;
     long bookerId;
 
-    @Future
     @NotNull
+    @Future
     LocalDateTime start;
 
-    @Future
     @NotNull
+    @Future
     LocalDateTime end;
 }

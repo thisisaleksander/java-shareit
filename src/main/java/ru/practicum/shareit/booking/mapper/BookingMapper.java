@@ -8,7 +8,7 @@ import ru.practicum.shareit.user.User;
 
 @NoArgsConstructor
 public class BookingMapper {
-    public static Booking toEntity(User user, Item item, BookingDto dto) {
+    public static Booking mapToBooking(User user, Item item, BookingDto dto) {
         Booking booking = new Booking();
         booking.setId(dto.getId());
         booking.setBooker(user);
@@ -18,7 +18,7 @@ public class BookingMapper {
         return booking;
     }
 
-    public static BookingDto toDto(Booking booking) {
+    public static BookingDto mapToBookingDto(Booking booking) {
         return new BookingDto(
                 booking.getId(),
                 booking.getItem().getId(),
