@@ -21,4 +21,5 @@ public class ItemDto {
     long count;
     @AssertTrue
     Boolean available;
+    long  requestId;
 }

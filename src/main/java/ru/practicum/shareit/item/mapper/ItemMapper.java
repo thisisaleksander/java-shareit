@@ -2,8 +2,8 @@ package ru.practicum.shareit.item.mapper;
 
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.comment.Comment;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.model.ItemWithBooking;
 import ru.practicum.shareit.user.User;
@@ -21,6 +21,7 @@ public class ItemMapper {
         item.setCount(dto.getCount());
         item.setUser(user);
         item.setAvailable(dto.getAvailable());
+        item.setRequestId(dto.getRequestId());
         return item;
     }
 
@@ -30,7 +31,8 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.getCount(),
-                item.getAvailable()
+                item.getAvailable(),
+                item.getRequestId()
         );
     }
 
@@ -45,6 +47,7 @@ public class ItemMapper {
         itemWithBooking.setLastBooking(lastBooking);
         itemWithBooking.setNextBooking(nextBooking);
         itemWithBooking.setComments(comments);
+        itemWithBooking.setRequestId(item.getRequestId());
         return itemWithBooking;
     }
 
