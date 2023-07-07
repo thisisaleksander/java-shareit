@@ -36,7 +36,7 @@ public class ItemMapper {
         );
     }
 
-    public static ItemWithBooking mapToItemWithBooking(Item item, BookingDto lastBooking, BookingDto nextBooking, List<Comment> comments) {
+    public static ItemWithBooking mapToItemWithBookingEntity(Item item, BookingDto lastBooking, BookingDto nextBooking, List<Comment> comments) {
         ItemWithBooking itemWithBooking = new ItemWithBooking();
         itemWithBooking.setId(item.getId());
         itemWithBooking.setName(item.getName());

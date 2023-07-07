@@ -94,7 +94,7 @@ public class ItemServiceImpl implements ItemService {
             nextBooking = null;
         }
         List<Comment> comments = commentRepository.findAllByItemId(itemId);
-        return ItemMapper.mapToItemWithBooking(item, lastBooking, nextBooking, comments);
+        return ItemMapper.mapToItemWithBookingEntity(item, lastBooking, nextBooking, comments);
     }
 
     @Override
@@ -216,7 +216,7 @@ public class ItemServiceImpl implements ItemService {
                 nextBooking = mapToBookingDto(nextBookingForDto);
             }
             List<Comment> comments = commentRepository.findAllByItemId(item.getId());
-            itemWithBookings.add(ItemMapper.mapToItemWithBooking(item, lastBooking, nextBooking, comments));
+            itemWithBookings.add(ItemMapper.mapToItemWithBookingEntity(item, lastBooking, nextBooking, comments));
         }
         return itemWithBookings;
     }
