@@ -13,7 +13,6 @@ import ru.practicum.shareit.comment.service.CommentRepository;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.ItemWithBooking;
 import ru.practicum.shareit.item.service.ItemRepository;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.user.User;
