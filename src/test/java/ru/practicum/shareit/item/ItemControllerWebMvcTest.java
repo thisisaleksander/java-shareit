@@ -248,7 +248,7 @@ class ItemControllerWebMvcTest {
     }
 
     @Test
-    void constantShouldBeWright () {
+    void constantShouldBeWright() {
         assertEquals(X_SHARER_USER_ID, "X-Sharer-User-Id");
     }
 }
