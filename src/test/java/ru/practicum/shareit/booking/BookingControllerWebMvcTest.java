@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.practicum.shareit.booking.mapper.BookingMapper.mapToBookingDto;
+import static ru.practicum.shareit.constant.Constants.X_SHARER_USER_ID;
 
 @WebMvcTest
 class BookingControllerWebMvcTest {
@@ -47,7 +48,7 @@ class BookingControllerWebMvcTest {
         when(bookingService.getBookingById(1L, 1L)).thenReturn(booking);
 
         String response = mockMvc.perform(get("/bookings/{bookingId}", 1L)
-                        .header("X-Sharer-User-Id", 1))
+                        .header(X_SHARER_USER_ID, 1))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -63,7 +64,7 @@ class BookingControllerWebMvcTest {
         when(bookingService.getByUserId(1L, "ALL",1, 10)).thenReturn(bookings);
 
         String response = mockMvc.perform(get("/bookings", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .param("from", "1")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -81,7 +82,7 @@ class BookingControllerWebMvcTest {
         when(bookingService.getByOwnerId(1L, "ALL",1, 10)).thenReturn(bookings);
 
         String response = mockMvc.perform(get("/bookings/owner", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .param("from", "1")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -99,7 +100,7 @@ class BookingControllerWebMvcTest {
         when(bookingService.approveBooking(anyLong(), anyLong(), anyBoolean())).thenReturn(booking);
 
         String response = mockMvc.perform(patch("/bookings/{bookingId}", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .param("approved", "true"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -123,7 +124,7 @@ class BookingControllerWebMvcTest {
         when(bookingService.addNewBooking(1L, mapToBookingDto(booking))).thenReturn(booking);
 
         mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(mapToBookingDto(booking))))
                 .andExpect(status().isBadRequest())
@@ -149,7 +150,7 @@ class BookingControllerWebMvcTest {
         when(bookingService.addNewBooking(1L, mapToBookingDto(booking))).thenReturn(booking);
 
         mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(mapToBookingDto(booking))))
                 .andExpect(status().isBadRequest())

@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.constant.Constants.X_SHARER_USER_ID;
 import static ru.practicum.shareit.item.mapper.ItemMapper.mapToItemDto;
 
 @WebMvcTest
@@ -46,7 +47,7 @@ class ItemControllerWebMvcTest {
         when(itemService.getItemsBy(1L, 1, 10)).thenReturn(itemWithBookings);
 
         String response = mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .param("from", "1")
                         .param("size", "10"))
 
@@ -65,7 +66,7 @@ class ItemControllerWebMvcTest {
         when(itemService.getItemById(1L, 1L)).thenReturn(itemWithBooking);
 
         String response = mockMvc.perform(get("/items/{itemId}", 1L)
-                        .header("X-Sharer-User-Id", 1))
+                        .header(X_SHARER_USER_ID, 1))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -103,7 +104,7 @@ class ItemControllerWebMvcTest {
         when(itemService.add(1L, mapToItemDto(item))).thenReturn(item);
 
         String response = mockMvc.perform(post("/items", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(mapToItemDto(item))))
                 .andExpect(status().isOk())
@@ -124,7 +125,7 @@ class ItemControllerWebMvcTest {
         when(itemService.add(1L, mapToItemDto(item))).thenReturn(item);
 
         mockMvc.perform(post("/items", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(mapToItemDto(item))))
                 .andExpect(status().isBadRequest())
@@ -146,7 +147,7 @@ class ItemControllerWebMvcTest {
         when(itemService.add(1L, mapToItemDto(item))).thenReturn(item);
 
         mockMvc.perform(post("/items", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(mapToItemDto(item))))
                 .andExpect(status().isBadRequest())
@@ -168,7 +169,7 @@ class ItemControllerWebMvcTest {
         when(itemService.add(1L, mapToItemDto(item))).thenReturn(item);
 
         mockMvc.perform(post("/items", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(mapToItemDto(item))))
                 .andExpect(status().isBadRequest())
@@ -188,7 +189,7 @@ class ItemControllerWebMvcTest {
         when(itemService.addComment(1L, comment, 1L)).thenReturn(comment);
 
         String response = mockMvc.perform(post("/items/{itemId}/comment", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(comment)))
                 .andExpect(status().isOk())
@@ -207,7 +208,7 @@ class ItemControllerWebMvcTest {
         when(itemService.addComment(1L, comment, 1L)).thenReturn(comment);
 
         mockMvc.perform(post("/items/{itemId}/comment", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(comment)))
                 .andExpect(status().isBadRequest())
@@ -225,7 +226,7 @@ class ItemControllerWebMvcTest {
         when(itemService.update(1L, itemDto, 1L)).thenReturn(itemDto);
 
         String response = mockMvc.perform(patch("/items/{itemId}", 1L)
-                        .header("X-Sharer-User-Id", 1)
+                        .header(X_SHARER_USER_ID, 1)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isOk())
@@ -240,9 +241,14 @@ class ItemControllerWebMvcTest {
     @Test
     void deleteItemTest() {
         mockMvc.perform(delete("/items/{itemId}", 1L)
-                        .header("X-Sharer-User-Id", 1))
+                        .header(X_SHARER_USER_ID, 1))
                 .andExpect(status().isOk());
 
         verify(itemService).delete(1L, 1L);
+    }
+
+    @Test
+    void constantShouldBeWright () {
+        assertEquals(X_SHARER_USER_ID, "X-Sharer-User-Id");
     }
 }
