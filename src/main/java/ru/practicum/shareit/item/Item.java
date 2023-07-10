@@ -25,6 +25,8 @@ public class Item {
     private User user;
     @Column(name = "available")
     Boolean available;
+    @Column (name = "request_id")
+    long  requestId;
 
     @Override
     public boolean equals(Object o) {

@@ -4,18 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.error.exception.AlreadyExistException;
 import ru.practicum.shareit.error.exception.UserNotFoundException;
-import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
@@ -26,21 +23,22 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User save(User user) throws AlreadyExistException {
+    public User save(User user) {
         log.info("[UserService] -> saving new user");
         return repository.save(user);
     }
 
     @Transactional
     @Override
-    public User update(long userId, User user) throws ValidationException {
+    public User update(long userId, User user) {
         user.setId(userId);
-        Optional<User> userTemp = repository.findById(userId);
+        User userTemp = repository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
         if (user.getName() == null) {
-            user.setName(userTemp.get().getName());
+            user.setName(userTemp.getName());
         }
         if (user.getEmail() == null) {
-            user.setEmail(userTemp.get().getEmail());
+            user.setEmail(userTemp.getEmail());
         }
         log.info("[UserService] -> user with id {} updated", userId);
         return repository.save(user);
@@ -48,12 +46,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByUserId(long userId) {
-        log.info("[UserService] -> trying to find user with id {}", userId);
         return repository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("[UserService] -> user with id {} not found", userId);
-                    return new UserNotFoundException(userId);
-                });
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     @Transactional

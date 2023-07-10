@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.error.exception.AlreadyExistException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -23,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User save(@RequestBody @Valid User user) throws AlreadyExistException {
+    public User save(@RequestBody @Valid User user) {
         log.info("[UserController] -> create user request");
         return userService.save(user);
     }

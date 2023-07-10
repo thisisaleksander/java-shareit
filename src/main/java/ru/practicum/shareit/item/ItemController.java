@@ -11,6 +11,8 @@ import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.model.ItemWithBooking;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,22 +27,28 @@ public class ItemController {
     ItemService itemService;
 
     @GetMapping
-    public Collection<ItemWithBooking> getItemsBy(@RequestHeader(value = X_SHARER_USER_ID) long userId) {
+    public Collection<ItemWithBooking> getItemsBy(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                                                  @RequestParam(value = "from", defaultValue = "0")@Min(0) int from,
+                                                  @RequestParam(value = "size", defaultValue = "10")@Min(1) @Max(100) int size)
+            throws ValidationException {
         log.info("[ItemController] -> get item request");
-        return itemService.getItemsBy(userId);
+        return itemService.getItemsBy(userId, from, size);
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithBooking getByItemId(@RequestHeader(value = X_SHARER_USER_ID) long userId,
-                                       @PathVariable long itemId) {
+    public ItemWithBooking getById(@RequestHeader(value = X_SHARER_USER_ID) long userId,
+                                   @PathVariable long itemId) {
         log.info("[ItemController] -> get item id request");
         return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> findByText(@RequestParam(name = "text") String query) {
+    public List<ItemDto> findByText(@RequestParam(name = "text") String query,
+                                    @RequestParam(value = "from", defaultValue = "0")@Min(0) int from,
+                                    @RequestParam(value = "size", defaultValue = "10")@Min(1) @Max(100) int size)
+            throws ValidationException {
         log.info("[ItemController] -> get item by text request");
-        return itemService.findByText(query);
+        return itemService.findByText(query, from, size);
     }
 
     @PostMapping

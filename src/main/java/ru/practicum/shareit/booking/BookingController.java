@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.error.exception.ValidationException;
+
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 import static ru.practicum.shareit.constant.Constants.X_SHARER_USER_ID;
@@ -30,16 +33,21 @@ public class BookingController {
 
     @GetMapping
     public List<Booking> getByUserId(@RequestHeader(value = X_SHARER_USER_ID) long userId,
-                                     @RequestParam(defaultValue = "ALL") String state) throws ValidationException {
+                                     @RequestParam(defaultValue = "ALL") String state,
+                                     @RequestParam(value = "from", defaultValue = "0")@Min(0) int from,
+                                     @RequestParam(value = "size", defaultValue = "10")@Min(1) @Max(100) int size) {
         log.info("[BookingController] -> bet booking by userId request");
-        return bookingService.getByUserId(userId, state);
+        return bookingService.getByUserId(userId, state, from, size);
     }
 
     @GetMapping("/owner")
     public List<Booking> getByOwnerId(@RequestHeader(value = X_SHARER_USER_ID) long userId,
-                                      @RequestParam(defaultValue = "ALL") String state) throws ValidationException {
+                                      @RequestParam(defaultValue = "ALL") String state,
+                                      @RequestParam(value = "from", defaultValue = "0")@Min(0) int from,
+                                      @RequestParam(value = "size", defaultValue = "10")@Min(1) @Max(100) int size)
+            throws ValidationException {
         log.info("[BookingController] -> bet booking by owner request");
-        return bookingService.getByOwnerId(userId, state);
+        return bookingService.getByOwnerId(userId, state, from, size);
     }
 
     @PatchMapping("/{bookingId}")

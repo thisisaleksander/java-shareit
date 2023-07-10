@@ -4,6 +4,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
@@ -17,22 +20,21 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.service.UserService;
 import java.util.List;
 
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toEntity;
+import static ru.practicum.shareit.booking.mapper.BookingMapper.mapToBooking;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class BookingServiceImpl implements BookingService {
     ItemService itemService;
     UserService userService;
-    BookingRepository bookingRepository;
+    BookingRepository repository;
 
     @Override
     public Booking getBookingById(long userId, long bookingId) {
         userService.getByUserId(userId);
-        Booking  booking = bookingRepository.findById(bookingId)
+        Booking  booking = repository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException(bookingId));
         User user = booking.getBooker();
         User owner = booking.getItem().getUser();
@@ -44,40 +46,52 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getByUserId(long userId, String state) throws ValidationException {
+    public List<Booking> getByUserId(long userId, String state, int from, int size) throws ValidationException {
         userService.getByUserId(userId);
+        if (from < 0) {
+            throw new ValidationException("from parameter should be positive");
+        }
+        Sort sortByDate = Sort.by(Sort.Direction.ASC, "start");
+        int pageIndex = from / size;
+        Pageable page = PageRequest.of(pageIndex, size, sortByDate);
         switch (state) {
             case "ALL":
-                return bookingRepository.findByUserId(userId);
+                return repository.getByBookerIdOrderByStartDesc(userId, page).toList();
             case "CURRENT":
-                return bookingRepository.getCurrentByUserId(userId);
+                return repository.getCurrentByUserId(userId, page).toList();
             case "PAST":
-                return bookingRepository.getBookingByUserIdAndFinishAfterNow(userId);
+                return repository.getBookingByUserIdAndFinishAfterNow(userId, page).toList();
             case "FUTURE":
-                return bookingRepository.getBookingByUserIdAndStarBeforeNow(userId);
+                return repository.getBookingByUserIdAndStarBeforeNow(userId, page).toList();
             case "WAITING":
             case "REJECTED":
-                return bookingRepository.getBookingByUserIdAndByStatusContainingIgnoreCase(userId, state);
+                return repository.getByBookerIdAndStatusContainingIgnoreCaseOrderByStartDesc(userId, state, page).toList();
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
     }
 
     @Override
-    public List<Booking> getByOwnerId(long userId, String state) throws ValidationException {
+    public List<Booking> getByOwnerId(long userId, String state, int from, int size) throws ValidationException {
         userService.getByUserId(userId);
+        if (from < 0) {
+            throw new ValidationException("from parameter should be positive");
+        }
+        Sort sortByDate = Sort.by(Sort.Direction.ASC, "start");
+        int pageIndex = from / size;
+        Pageable page = PageRequest.of(pageIndex, size, sortByDate);
         switch (state) {
             case "ALL":
-                return bookingRepository.findByOwnerId(userId);
+                return repository.findByOwnerId(userId, page).toList();
             case "CURRENT":
-                return bookingRepository.getCurrentByOwnerId(userId);
+                return repository.getCurrentByOwnerId(userId, page).toList();
             case "PAST":
-                return bookingRepository.getPastByOwnerId(userId);
+                return repository.getPastByOwnerId(userId, page).toList();
             case "FUTURE":
-                return bookingRepository.getBookingByOwnerIdAndStarBeforeNow(userId);
+                return repository.getBookingByOwnerIdAndStarBeforeNowOrderByStartDesc(userId, page).toList();
             case "WAITING":
             case "REJECTED":
-                return bookingRepository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state);
+                return repository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state, page).toList();
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
@@ -87,7 +101,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking approveBooking(long userId, long bookingId, boolean approve) throws ValidationException {
         userService.getByUserId(userId);
-        Booking  booking = bookingRepository.findById(bookingId).orElseThrow(() -> new BookingNotFoundException(bookingId));
+        Booking  booking = repository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException(bookingId));
         if (booking.getStatus().equals("APPROVED")) {
             throw new ValidationException(String.format("Booking with id =%d already approved", bookingId));
         }
@@ -100,7 +115,7 @@ public class BookingServiceImpl implements BookingService {
         } else {
             booking.setStatus("REJECTED");
         }
-        bookingRepository.save(booking);
+        repository.save(booking);
         return booking;
     }
 
@@ -118,9 +133,9 @@ public class BookingServiceImpl implements BookingService {
         if (!item.getAvailable()) {
             throw new ValidationException("Item is not available for booking");
         }
-        Booking booking = toEntity(user, item, bookingDto);
+        Booking booking = mapToBooking(user, item, bookingDto);
         booking.setStatus("WAITING");
-        bookingRepository.save(booking);
+        repository.save(booking);
         return booking;
     }
 }
