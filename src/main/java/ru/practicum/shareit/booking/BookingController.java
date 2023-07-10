@@ -35,8 +35,7 @@ public class BookingController {
     public List<Booking> getByUserId(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                                      @RequestParam(defaultValue = "ALL") String state,
                                      @RequestParam(value = "from", defaultValue = "0")@Min(0) int from,
-                                     @RequestParam(value = "size", defaultValue = "10")@Min(1) @Max(100) int size)
-            throws ValidationException {
+                                     @RequestParam(value = "size", defaultValue = "10")@Min(1) @Max(100) int size) {
         log.info("[BookingController] -> bet booking by userId request");
         return bookingService.getByUserId(userId, state, from, size);
     }
