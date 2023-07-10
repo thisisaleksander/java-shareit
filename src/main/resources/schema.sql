@@ -16,7 +16,7 @@ create table if not exists items (
     request_id  BIGINT,
     constraint pk_items primary key (id),
     constraint fk_items_to_users foreign key (user_id) references users(id),
-    unique (id)
+    constraint uq_owner_item_name unique (user_id, name)
 );
 
 create table if not exists comments (
