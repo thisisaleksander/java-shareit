@@ -15,6 +15,7 @@ import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.comment.service.CommentRepository;
 import ru.practicum.shareit.error.exception.ItemNotFoundException;
 import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.UserNotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -187,7 +188,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public void checkExistUserById(long userId) {
-        userService.getByUserId(userId);
+        try {
+            userService.getByUserId(userId);
+        } catch (UserNotFoundException exception) {
+            throw new UserNotFoundException(userId);
+        }
     }
 
     public List<ItemWithBooking> mapToItemWithBooking(Iterable<Item> items) {
