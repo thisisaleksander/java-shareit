@@ -12,7 +12,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface ItemService {
     @Transactional
-    Item addNewItem(long userId, ItemDto itemDto);
+    Item add(long userId, ItemDto itemDto);
 
     Collection<ItemWithBooking> getItems(long userId, int from, int size);
 
@@ -21,13 +21,13 @@ public interface ItemService {
     Item getItemById(long itemId);
 
     @Transactional
-    ItemDto updateItem(long userId, ItemDto itemDto, long itemId);
+    ItemDto update(long userId, ItemDto itemDto, long itemId);
 
     @Transactional
-    void deleteItem(long userId, long itemId);
+    void delete(long userId, long itemId);
 
     @Transactional
-    Comment addNewComment(long userId, Comment comment, long itemId);
+    Comment addComment(long userId, Comment comment, long itemId);
 
-    List<ItemDto> getItemByQuery(String query, int from, int size);
+    List<ItemDto> findByText(String query, int from, int size);
 }

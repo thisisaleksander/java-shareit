@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.comment.service.CommentRepository;
+import ru.practicum.shareit.error.exception.ItemNotFoundException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.UserNotFoundException;
 import ru.practicum.shareit.error.exception.ValidationException;
@@ -57,7 +58,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemWithBooking getItemById(long userId, long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.format("Вещь с ID =%d не найден", itemId)));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
         BookingDto lastBooking;
         BookingDto nextBooking;
         if (userId == item.getUser().getId()) {
@@ -98,11 +100,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item getItemById(long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.format("Вещь с ID =%d не найден", itemId)));
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
     }
 
     @Override
-    public ItemDto updateItem(long userId, ItemDto itemDto, long itemId) {
+    public ItemDto update(long userId, ItemDto itemDto, long itemId) {
         validateUserId(userId);
         Item item = itemRepository.findById(itemId).get();
         if (itemDto.getName() != null) {
@@ -119,9 +121,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item addNewItem(long userId, ItemDto itemDto) {
+    public Item add(long userId, ItemDto itemDto) {
         if (itemDto.getAvailable() == null || !itemDto.getAvailable()) {
-            throw new ValidationException("Вещь должна быть доступна");
+            throw new ValidationException("Item is not available");
         }
         validateUserId(userId);
 
@@ -132,28 +134,29 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public void deleteItem(long userId, long itemId) {
+    public void delete(long userId, long itemId) {
         validateUserId(userId);
         validateOwner(userId, itemRepository.findById(itemId).get());
         itemRepository.deleteByUserIdAndId(userId, itemId);
     }
 
     @Override
-    public Comment addNewComment(long userId, Comment comment, long itemId) {
+    public Comment addComment(long userId, Comment comment, long itemId) {
         List<Booking> bookings = bookingRepository.getBookingByBookerIdAndItemIdAndEndBeforeOrderByStartDesc(
                 userId,
                 itemId,
                 dateUtils.now());
         if (!bookings.isEmpty()) {
-            comment.setItem(itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found")));
+            comment.setItem(itemRepository.findById(itemId)
+                    .orElseThrow(() -> new ItemNotFoundException(itemId)));
             comment.setAuthorName(userService.getUserById(userId).getName());
             comment.setCreated(LocalDateTime.now());
             return commentRepository.save(comment);
-        } else throw new ValidationException("Пользователь не брал в аренду вещь");
+        } else throw new ValidationException("User did not book this item");
     }
 
     @Override
-    public List<ItemDto> getItemByQuery(String query, int from, int size) {
+    public List<ItemDto> findByText(String query, int from, int size) {
         if (from < 0) {
             throw new ValidationException("from is negative");
         }

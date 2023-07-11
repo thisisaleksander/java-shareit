@@ -42,21 +42,21 @@ public class ItemController {
                                     @RequestParam(value = "from", defaultValue = "0") int from,
                                     @RequestParam(value = "size", defaultValue = "10") int size) {
         log.info("[ItemController] -> get item by text request");
-        return itemService.getItemByQuery(query, from, size);
+        return itemService.findByText(query, from, size);
     }
 
     @PostMapping
     public Item add(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                     @RequestBody ItemDto itemDto) {
         log.info("[ItemController] -> create new item request");
-        return itemService.addNewItem(userId, itemDto);
+        return itemService.add(userId, itemDto);
     }
 
     @PostMapping("/{itemId}/comment")
     public Comment addComment(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                            @RequestBody Comment comment,
                            @PathVariable long itemId) {
-        return itemService.addNewComment(userId, comment, itemId);
+        return itemService.addComment(userId, comment, itemId);
     }
 
     @PatchMapping("/{itemId}")
@@ -64,12 +64,12 @@ public class ItemController {
                           @RequestBody ItemDto itemDto,
                           @PathVariable long itemId) {
         log.info("[ItemController] -> add new comment request");
-        return itemService.updateItem(userId, itemDto, itemId);
+        return itemService.update(userId, itemDto, itemId);
     }
 
     @DeleteMapping("/{itemId}")
     public void deleteItem(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                            @PathVariable long itemId) {
-        itemService.deleteItem(userId, itemId);
+        itemService.delete(userId, itemId);
     }
 }

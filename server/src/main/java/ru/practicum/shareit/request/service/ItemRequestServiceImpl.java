@@ -79,7 +79,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public ItemRequest getRequestById(long userId, long requestId) {
         validateUserId(userId);
-        ItemRequest itemRequest = itemRequestRepository.findById(requestId).orElseThrow(() -> new ItemRequestNotFoundException(requestId));
+        ItemRequest itemRequest = itemRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ItemRequestNotFoundException(requestId));
         List<Item> items = itemRepository.findByRequestId(requestId).orElse(null);
         itemRequest.setItems(items);
         return itemRequest;
