@@ -15,15 +15,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CommentRequest {
-
     long id;
-
     long itemId;
-
     String authorName;
-
     LocalDateTime created;
-
-    @NotBlank(message = "Текст не может быть пустым или содержать только пробелы")
+    @NotBlank
     String text;
 }

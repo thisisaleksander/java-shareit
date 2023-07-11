@@ -16,12 +16,10 @@ import javax.validation.constraints.NotNull;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRequest {
     long id;
-
-    @NotNull(message = "email не может быть пустым")
-    @Email(message = "email введен не верно")
+    @NotNull
+    @Email
     String email;
-
-    @NotNull(message = "Имя не может быть пустым")
-    @NotBlank(message = "Имя не может быть пустым или содержать только пробелы")
+    @NotNull
+    @NotBlank
     String name;
 }

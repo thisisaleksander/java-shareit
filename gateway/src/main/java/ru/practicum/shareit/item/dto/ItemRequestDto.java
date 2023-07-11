@@ -15,9 +15,9 @@ import javax.validation.constraints.NotBlank;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRequestDto {
     long id;
-    @NotBlank(message = "Имя не может быть пустым или содержать только пробелы")
+    @NotBlank
     String name;
-    @NotBlank(message = "Описание не может быть пустым или содержать только пробелы")
+    @NotBlank
     String description;
     long count;
     @AssertTrue

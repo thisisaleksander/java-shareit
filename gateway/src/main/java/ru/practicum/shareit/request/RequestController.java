@@ -14,6 +14,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
+import static ru.practicum.shareit.constant.Constants.X_SHARER_USER_ID;
+
 
 @Controller
 @RequestMapping(path = "/requests")
@@ -22,30 +24,29 @@ import javax.validation.constraints.PositiveOrZero;
 @Validated
 public class RequestController {
     private final RequestClient requestClient;
-    static final String USERID = "X-Sharer-User-Id";
 
     @GetMapping
-    public ResponseEntity<Object> getItemRequest(@RequestHeader(USERID) long userId) {
+    public ResponseEntity<Object> getItemRequest(@RequestHeader(value = X_SHARER_USER_ID) long userId) {
         log.info("Get requests userId={}", userId);
         return requestClient.getRequests(userId);
     }
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<Object> getItemRequestById(@RequestHeader(USERID) long userId,
+    public ResponseEntity<Object> getItemRequestById(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                                                      @PathVariable long requestId) {
         log.info("Get requestsId= {}, userId={}", requestId, userId);
         return requestClient.getRequestById(userId, requestId);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Object> getAllItemRequest(@RequestHeader(USERID) long userId,
+    public ResponseEntity<Object> getAllItemRequest(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                                                     @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
                                                     @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
         return requestClient.getAllRequest(userId, from, size);
     }
 
     @PostMapping
-    public ResponseEntity<Object> add(@RequestHeader(USERID) long userId,
+    public ResponseEntity<Object> add(@RequestHeader(value = X_SHARER_USER_ID) long userId,
                                        @RequestBody @Valid RequestDto requestDto) {
         return requestClient.addNewItemRequest(userId, requestDto);
     }
