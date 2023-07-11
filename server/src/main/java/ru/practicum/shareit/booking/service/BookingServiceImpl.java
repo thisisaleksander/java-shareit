@@ -29,12 +29,12 @@ import static ru.practicum.shareit.booking.mapper.BookingMapper.mapToBooking;
 public class BookingServiceImpl implements BookingService {
     ItemService itemService;
     UserService userService;
-    BookingRepository repository;
+    BookingRepository bookingRepository;
 
     @Override
     public Booking getBookingById(long userId, long bookingId) {
         userService.getUserById(userId);
-        Booking  booking = repository.findById(bookingId)
+        Booking  booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException(bookingId));
         User user = booking.getBooker();
         User owner = booking.getItem().getUser();
@@ -55,16 +55,16 @@ public class BookingServiceImpl implements BookingService {
         Pageable page = PageRequest.of(pageIndex, size, sortByDate);
         switch (state) {
             case "ALL":
-                return repository.getByBookerIdOrderByStartDesc(userId, page).toList();
+                return bookingRepository.getByBookerIdOrderByStartDesc(userId, page).toList();
             case "CURRENT":
-                return repository.getCurrentByUserId(userId, page).toList();
+                return bookingRepository.getCurrentByUserId(userId, page).toList();
             case "PAST":
-                return repository.getBookingByUserIdAndFinishAfterNow(userId, page).toList();
+                return bookingRepository.getBookingByUserIdAndFinishAfterNow(userId, page).toList();
             case "FUTURE":
-                return repository.getBookingByUserIdAndStarBeforeNow(userId, page).toList();
+                return bookingRepository.getBookingByUserIdAndStarBeforeNow(userId, page).toList();
             case "WAITING":
             case "REJECTED":
-                return repository.getByBookerIdAndStatusContainingIgnoreCaseOrderByStartDesc(userId, state, page).toList();
+                return bookingRepository.getByBookerIdAndStatusContainingIgnoreCaseOrderByStartDesc(userId, state, page).toList();
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
@@ -81,16 +81,16 @@ public class BookingServiceImpl implements BookingService {
         Pageable page = PageRequest.of(pageIndex, size, sortByDate);
         switch (state) {
             case "ALL":
-                return repository.findByOwnerId(userId, page).toList();
+                return bookingRepository.findByOwnerId(userId, page).toList();
             case "CURRENT":
-                return repository.getCurrentByOwnerId(userId, page).toList();
+                return bookingRepository.getCurrentByOwnerId(userId, page).toList();
             case "PAST":
-                return repository.getPastByOwnerId(userId, page).toList();
+                return bookingRepository.getPastByOwnerId(userId, page).toList();
             case "FUTURE":
-                return repository.getBookingByOwnerIdAndStarBeforeNowOrderByStartDesc(userId, page).toList();
+                return bookingRepository.getBookingByOwnerIdAndStarBeforeNowOrderByStartDesc(userId, page).toList();
             case "WAITING":
             case "REJECTED":
-                return repository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state, page).toList();
+                return bookingRepository.getBookingByOwnerIdAndByStatusContainingIgnoreCase(userId, state, page).toList();
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
@@ -100,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking approveBooking(long userId, long bookingId, boolean approve) {
         userService.getUserById(userId);
-        Booking  booking = repository.findById(bookingId)
+        Booking  booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException(bookingId));
         if (booking.getStatus().equals("APPROVED")) {
             throw new ValidationException(String.format("Booking with id =%d already approved", bookingId));
@@ -114,7 +114,7 @@ public class BookingServiceImpl implements BookingService {
         } else {
             booking.setStatus("REJECTED");
         }
-        repository.save(booking);
+        bookingRepository.save(booking);
         return booking;
     }
 
@@ -134,7 +134,7 @@ public class BookingServiceImpl implements BookingService {
         }
         Booking booking = mapToBooking(user, item, bookingDto);
         booking.setStatus("WAITING");
-        repository.save(booking);
+        bookingRepository.save(booking);
         return booking;
     }
 }

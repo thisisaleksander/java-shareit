@@ -18,23 +18,16 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
-
-    @Column
+    @Column(name = "name")
     String name;
-
-    @Column
+    @Column(name = "description")
     String description;
-
-    @Column
+    @Column(name = "count")
     long count;
-
     @ManyToOne
     private User user;
-
-    @Column
+    @Column(name = "available")
     Boolean available;
-
-
     @Column (name = "request_id")
     long  requestId;
 
@@ -43,7 +36,12 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return Objects.equals(id, item.id) && Objects.equals(name, item.name) && Objects.equals(description, item.description) && Objects.equals(count, item.count) && Objects.equals(user, item.user) && Objects.equals(available, item.available);
+        return Objects.equals(id, item.id)
+                && Objects.equals(name, item.name)
+                && Objects.equals(description, item.description)
+                && Objects.equals(count, item.count)
+                && Objects.equals(user, item.user)
+                && Objects.equals(available, item.available);
     }
 
     @Override

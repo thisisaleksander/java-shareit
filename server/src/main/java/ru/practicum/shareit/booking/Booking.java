@@ -21,21 +21,16 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     User booker;
-
     @ManyToOne
     @JoinColumn(name = "item_id")
     Item item;
-
     @Column
     String status;
-
     @Column(name = "start")
     LocalDateTime start;
-
     @Column(name = "finish")
     LocalDateTime end;
 
@@ -44,7 +39,12 @@ public class Booking {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Booking booking = (Booking) o;
-        return Objects.equals(id, booking.id) && status == booking.status && Objects.equals(start, booking.start) && Objects.equals(end, booking.end) && Objects.equals(booker, booking.booker) && Objects.equals(item, booking.item);
+        return Objects.equals(id, booking.id)
+                && status == booking.status
+                && Objects.equals(start, booking.start)
+                && Objects.equals(end, booking.end)
+                && Objects.equals(booker, booking.booker)
+                && Objects.equals(item, booking.item);
     }
 
     @Override
