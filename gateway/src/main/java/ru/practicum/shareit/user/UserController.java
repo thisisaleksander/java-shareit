@@ -23,7 +23,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> saveNewUser(@RequestBody @Valid UserRequest user) {
+    public ResponseEntity<Object> saveNewUser(@RequestBody @Valid CreateUserRequest user) {
         log.info("Creating user {}", user);
         return userClient.saveNewUser(user);
     }
@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Object> updateUser(@RequestBody UserRequest user, @PathVariable long userId) {
+    public ResponseEntity<Object> updateUser(@RequestBody CreateUserRequest user, @PathVariable long userId) {
         log.info("Update user {} ID = {}", user, userId);
         return userClient.updateUser(userId, user);
     }

@@ -27,7 +27,7 @@ public class UserClient extends BaseClient {
         return get("");
     }
 
-    public ResponseEntity<Object> saveNewUser(UserRequest user) {
+    public ResponseEntity<Object> saveNewUser(CreateUserRequest user) {
         return post("", user);
     }
 
@@ -39,7 +39,7 @@ public class UserClient extends BaseClient {
         return delete("/" + userId);
     }
 
-    public ResponseEntity<Object> updateUser(long userId, UserRequest user) {
+    public ResponseEntity<Object> updateUser(long userId, CreateUserRequest user) {
         return patch("/" + userId, user);
     }
 
