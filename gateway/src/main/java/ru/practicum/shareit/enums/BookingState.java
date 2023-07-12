@@ -1,6 +1,6 @@
 package ru.practicum.shareit.enums;
 
-import java.util.Optional;
+import ru.practicum.shareit.error.exception.ValidationException;
 
 public enum BookingState {
 	ALL,
@@ -10,12 +10,12 @@ public enum BookingState {
 	REJECTED,
 	WAITING;
 
-	public static Optional<BookingState> from(String stringState) {
+	public static BookingState from(String stringState) {
 		for (BookingState state : values()) {
 			if (state.name().equalsIgnoreCase(stringState)) {
-				return Optional.of(state);
+				return state;
 			}
 		}
-		return Optional.empty();
+		throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
 	}
 }
