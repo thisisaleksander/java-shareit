@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import ru.practicum.shareit.request.dto.RequestDto;
+import ru.practicum.shareit.request.dto.CreateRequestDto;
 
 import javax.validation.Valid;
 
@@ -47,7 +47,7 @@ public class RequestController {
 
     @PostMapping
     public ResponseEntity<Object> add(@RequestHeader(value = X_SHARER_USER_ID) long userId,
-                                       @RequestBody @Valid RequestDto requestDto) {
+                                       @RequestBody @Valid CreateRequestDto requestDto) {
         return requestClient.addNewItemRequest(userId, requestDto);
     }
 }
